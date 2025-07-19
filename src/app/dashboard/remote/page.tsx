@@ -17,16 +17,6 @@ export default function RemotePage() {
     const [isScreenMirroring, setIsScreenMirroring] = React.useState(false);
 
     React.useEffect(() => {
-        if (isScreenMirroring) {
-            if (videoRef.current && videoRef.current.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                stream.getTracks().forEach(track => track.stop());
-                videoRef.current.srcObject = null;
-            }
-            setHasCameraPermission(null);
-            return;
-        };
-
         const getCameraPermission = async () => {
           if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
             try {
@@ -50,7 +40,9 @@ export default function RemotePage() {
           }
         };
       
-        getCameraPermission();
+        if (!isScreenMirroring) {
+            getCameraPermission();
+        }
       
         return () => {
             if (videoRef.current && videoRef.current.srcObject) {
@@ -62,6 +54,14 @@ export default function RemotePage() {
     
     const handleScreenMirrorToggle = () => {
         if (!isScreenMirroring) {
+            // Stop camera stream if it's running
+            if (videoRef.current && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
+                videoRef.current.srcObject = null;
+            }
+            setHasCameraPermission(null);
+
             toast({
                 title: 'Screen Mirroring Started',
                 description: 'Live screen sharing has begun.',
@@ -107,7 +107,7 @@ export default function RemotePage() {
                                                 </Alert>
                                             </div>
                                         )}
-                                        {hasCameraPermission === null && (
+                                        {hasCameraPermission === null && !isScreenMirroring && (
                                              <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
                                                 <p>Requesting camera permission...</p>
                                              </div>
@@ -121,7 +121,7 @@ export default function RemotePage() {
                                     <Switch id="camera-switch" defaultChecked/>
                                     <Label htmlFor="camera-switch">Front Camera</Label>
                                    </div>
-                                    <Button>
+                                    <Button disabled={!hasCameraPermission}>
                                         <Camera className="mr-2 h-4 w-4" />
                                         Take Snapshot
                                     </Button>
