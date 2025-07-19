@@ -14,20 +14,14 @@ import {
   MessageSquare,
   Settings,
   Smartphone,
-  Video,
+  VideoIcon,
   FileText,
-  KeyRound,
-  Calendar,
-  Download,
-  Users,
   Shield,
   Phone,
   Camera,
-  Record,
-  Mic,
-  Clapperboard,
   Monitor,
-  VideoIcon,
+  Users,
+  Clapperboard,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -68,7 +62,11 @@ export function DashboardSidebar({ search }: { search?: string }) {
   const pathname = usePathname()
 
   const isActive = (path: string) => {
-    return pathname === path || (pathname.startsWith(path) && path !== '/dashboard');
+    // Exact match for dashboard, startsWith for others.
+    if (path === '/dashboard') {
+      return pathname === path;
+    }
+    return pathname.startsWith(path);
   }
   
   const isSubActive = (paths: string[]) => {
@@ -86,7 +84,6 @@ export function DashboardSidebar({ search }: { search?: string }) {
       href: '/dashboard',
       icon: <LayoutDashboard />,
       label: 'Dashboard',
-      paths: ['/dashboard'],
     },
     {
       type: 'collapsible',
@@ -138,24 +135,34 @@ export function DashboardSidebar({ search }: { search?: string }) {
       href: '/dashboard/settings',
       icon: <Settings />,
       label: 'Settings',
-      paths: ['/dashboard/settings'],
     },
   ];
 
   const filteredMenuItems = React.useMemo(() => {
-    if (!search) return menuItems;
+    if (!search || search.trim() === '') return menuItems;
+
+    const lowerCaseSearch = search.toLowerCase();
 
     return menuItems.map(item => {
       if (item.type === 'item') {
-        return item.label.toLowerCase().includes(search.toLowerCase()) ? item : null;
+        return item.label.toLowerCase().includes(lowerCaseSearch) ? item : null;
       }
       if (item.type === 'collapsible') {
-        const filteredSubItems = item.subItems.filter(subItem => 
-          subItem.label.toLowerCase().includes(search.toLowerCase())
+        const hasMatchingSubItems = item.subItems.some(subItem => 
+          subItem.label.toLowerCase().includes(lowerCaseSearch)
         );
 
-        if (item.label.toLowerCase().includes(search.toLowerCase()) || filteredSubItems.length > 0) {
-          return { ...item, subItems: filteredSubItems.length > 0 ? filteredSubItems : item.subItems };
+        // If the main item matches or it has matching sub-items, include it.
+        if (item.label.toLowerCase().includes(lowerCaseSearch) || hasMatchingSubItems) {
+            // If the search doesn't match the main label, only show matching sub-items.
+            if (!item.label.toLowerCase().includes(lowerCaseSearch) && hasMatchingSubItems) {
+                const filteredSubItems = item.subItems.filter(subItem => 
+                    subItem.label.toLowerCase().includes(lowerCaseSearch)
+                );
+                return { ...item, subItems: filteredSubItems };
+            }
+            // Otherwise, show the whole group
+            return item;
         }
         return null;
       }
@@ -222,7 +229,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
               return (
                  <Collapsible key={index} defaultOpen={isSubActive(item.paths)}>
                     <CollapsibleTrigger asChild className="w-full">
-                         <SidebarMenuButton isActive={isSubActive(item.paths)} className="w-full">
+                        <SidebarMenuButton isActive={isSubActive(item.paths)} className="w-full">
                             {item.icon}
                             <span>{item.label}</span>
                             <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -233,7 +240,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
                           {item.subItems.map((subItem, subIndex) => (
                              <SidebarMenuItem key={subIndex}>
                                 <Link href={subItem.href} passHref>
-                                  <SidebarMenuButton variant="ghost" size="sm" isActive={isActive(subItem.href)}>
+                                  <SidebarMenuButton variant="ghost" size="sm" isActive={isActive(subItem.href) && pathname === subItem.href}>
                                     {subItem.icon} 
                                     <span>{subItem.label}</span>
                                   </SidebarMenuButton>
