@@ -1,0 +1,84 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    // ✅ Your Firebase config goes here
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // Auth State Listener
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("loginForm").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+
+        const dataRef = ref(db, "childData/");
+        onValue(dataRef, (snapshot) => {
+          const data = snapshot.val();
+          document.getElementById("data").innerText = data ? JSON.stringify(data, null, 2) : "No data available";
+        });
+      } else {
+        document.getElementById("loginForm").style.display = "block";
+        document.getElementById("dashboard").style.display = "none";
+      }
+    });
+
+    // Login function
+    window.login = function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .catch((error) => {
+          alert("Login Failed: " + error.message);
+        });
+    }
+
+    // Logout function
+    window.logout = function () {
+      signOut(auth);
+    }
+  </script>
+
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input { margin: 5px 0; padding: 8px; width: 250px; }
+    button { padding: 8px 12px; margin-top: 10px; }
+    #data { margin-top: 20px; white-space: pre-wrap; background: #f4f4f4; padding: 10px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>📊 Admin Dashboard</h1>
+
+  <div id="loginForm">
+    <input type="email" id="email" placeholder="Admin Email" /><br />
+    <input type="password" id="password" placeholder="Password" /><br />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="dashboard" style="display: none;">
+    <button onclick="logout()">Logout</button>
+    <h3>👦 Child Activity</h3>
+    <div id="data">Loading...</div>
+  </div>
+</body>
+</html>
