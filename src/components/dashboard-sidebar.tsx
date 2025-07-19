@@ -3,6 +3,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import * as React from "react"
 import {
   AppWindow,
   ChevronDown,
@@ -63,7 +64,7 @@ const socialApps = [
     { name: "Telegram", icon: <MessageSquare /> },
 ]
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ search }: { search?: string }) {
   const pathname = usePathname()
 
   const isActive = (path: string) => {
@@ -78,6 +79,89 @@ export function DashboardSidebar() {
   const locationPaths = ["/dashboard/location"];
   const remoteControlPaths = ["/dashboard/remote"];
   const socialAppPaths = ["/dashboard/social"];
+  
+  const menuItems = [
+    {
+      type: 'item',
+      href: '/dashboard',
+      icon: <LayoutDashboard />,
+      label: 'Dashboard',
+      paths: ['/dashboard'],
+    },
+    {
+      type: 'collapsible',
+      icon: <FileText />,
+      label: 'Phone Files',
+      paths: phoneFilesPaths,
+      subItems: [
+        { href: '/dashboard/messages', icon: <Phone />, label: 'Call Logs' },
+        { href: '/dashboard/messages', icon: <MessageSquare />, label: 'Messages' },
+        { href: '/dashboard/history', icon: <Globe />, label: 'Browser History' },
+        { href: '/dashboard/media', icon: <ImageIcon />, label: 'Photos' },
+        { href: '/dashboard/media', icon: <VideoIcon />, label: 'Video Preview' },
+        { href: '/dashboard/apps', icon: <AppWindow />, label: 'App Activities' },
+      ],
+    },
+    {
+      type: 'collapsible',
+      icon: <MapPin />,
+      label: 'Location Tracking',
+      paths: locationPaths,
+      subItems: [
+        { href: '/dashboard/location', icon: <MapPin />, label: 'Location' },
+        { href: '/dashboard/location', icon: <Shield />, label: 'Geofence' },
+      ],
+    },
+    {
+      type: 'collapsible',
+      icon: <Clapperboard />,
+      label: 'Remote Control',
+      paths: remoteControlPaths,
+      subItems: [
+        { href: '/dashboard/remote', icon: <Monitor />, label: 'Record Screen' },
+        { href: '/dashboard/remote', icon: <Camera />, label: 'Take Photos' },
+      ],
+    },
+    {
+      type: 'collapsible',
+      icon: <Users />,
+      label: 'Social Apps',
+      paths: socialAppPaths,
+      subItems: socialApps.map(app => ({
+        href: '/dashboard/messages',
+        icon: app.icon,
+        label: app.name,
+      })),
+    },
+     {
+      type: 'item',
+      href: '/dashboard/settings',
+      icon: <Settings />,
+      label: 'Settings',
+      paths: ['/dashboard/settings'],
+    },
+  ];
+
+  const filteredMenuItems = React.useMemo(() => {
+    if (!search) return menuItems;
+
+    return menuItems.map(item => {
+      if (item.type === 'item') {
+        return item.label.toLowerCase().includes(search.toLowerCase()) ? item : null;
+      }
+      if (item.type === 'collapsible') {
+        const filteredSubItems = item.subItems.filter(subItem => 
+          subItem.label.toLowerCase().includes(search.toLowerCase())
+        );
+
+        if (item.label.toLowerCase().includes(search.toLowerCase()) || filteredSubItems.length > 0) {
+          return { ...item, subItems: filteredSubItems.length > 0 ? filteredSubItems : item.subItems };
+        }
+        return null;
+      }
+      return null;
+    }).filter(Boolean);
+  }, [search, menuItems]);
 
 
   return (
@@ -115,145 +199,53 @@ export function DashboardSidebar() {
         </SidebarGroup>
 
         <SidebarMenu>
-          <SidebarMenuItem>
-            <Link href="/dashboard" passHref>
-              <SidebarMenuButton
-                isActive={pathname === '/dashboard'}
-                tooltip="Dashboard"
-              >
-                <LayoutDashboard />
-                <span>Dashboard</span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-          
-          <Collapsible defaultOpen={isSubActive(phoneFilesPaths)}>
-            <CollapsibleTrigger asChild className="w-full">
-                 <SidebarMenuButton isActive={isSubActive(phoneFilesPaths)} className="w-full">
-                    <FileText />
-                    <span>Phone Files</span>
-                    <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                </SidebarMenuButton>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-                <SidebarMenu className="pl-6 py-1">
-                    <SidebarMenuItem>
-                        <Link href="/dashboard/messages" passHref>
-                          <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/messages')}><Phone className="w-3.5 h-3.5" /> <span>Call Logs</span></SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <Link href="/dashboard/messages" passHref>
-                           <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/messages')}><MessageSquare className="w-3.5 h-3.5" /> <span>Messages</span></SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <Link href="/dashboard/history" passHref>
-                           <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/history')}><Globe className="w-3.5 h-3.5" /> <span>Browser History</span></SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <Link href="/dashboard/media" passHref>
-                           <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/media')}><ImageIcon className="w-3.5 h-3.5" /> <span>Photos</span></SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <Link href="/dashboard/media" passHref>
-                           <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/media')}><VideoIcon className="w-3.5 h-3.5" /> <span>Video Preview</span></SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                     <SidebarMenuItem>
-                        <Link href="/dashboard/apps" passHref>
-                           <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/apps')}><AppWindow className="w-3.5 h-3.5" /> <span>App Activities</span></SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </CollapsibleContent>
-          </Collapsible>
-        
-          <Collapsible defaultOpen={isSubActive(locationPaths)}>
-            <CollapsibleTrigger asChild className="w-full">
-                 <SidebarMenuButton isActive={isSubActive(locationPaths)} className="w-full">
-                    <MapPin />
-                    <span>Location Tracking</span>
-                    <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                </SidebarMenuButton>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-                <SidebarMenu className="pl-6 py-1">
-                     <SidebarMenuItem>
-                        <Link href="/dashboard/location" passHref>
-                           <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/location')}><MapPin className="w-3.5 h-3.5" /> <span>Location</span></SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                     <SidebarMenuItem>
-                        <Link href="/dashboard/location" passHref>
-                           <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/location')}><Shield className="w-3.5 h-3.5" /> <span>Geofence</span></SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </CollapsibleContent>
-          </Collapsible>
+          {filteredMenuItems.map((item, index) => {
+            if (!item) return null;
 
-          <Collapsible defaultOpen={isSubActive(remoteControlPaths)}>
-            <CollapsibleTrigger asChild className="w-full">
-                 <SidebarMenuButton isActive={isSubActive(remoteControlPaths)} className="w-full">
-                    <Clapperboard />
-                    <span>Remote Control</span>
-                    <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                </SidebarMenuButton>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-                <SidebarMenu className="pl-6 py-1">
-                     <SidebarMenuItem>
-                        <Link href="/dashboard/remote" passHref>
-                           <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/remote')}><Monitor className="w-3.5 h-3.5" /> <span>Record Screen</span></SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                     <SidebarMenuItem>
-                        <Link href="/dashboard/remote" passHref>
-                           <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/remote')}><Camera className="w-3.5 h-3.5" /> <span>Take Photos</span></SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </CollapsibleContent>
-          </Collapsible>
-          
-           <Collapsible defaultOpen={isSubActive(socialAppPaths)}>
-            <CollapsibleTrigger asChild className="w-full">
-                 <SidebarMenuButton isActive={isSubActive(socialAppPaths)} className="w-full">
-                    <Users />
-                    <span>Social Apps</span>
-                    <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                </SidebarMenuButton>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-                <SidebarMenu className="pl-6 py-1">
-                    {socialApps.map(app => (
-                        <SidebarMenuItem key={app.name}>
-                            <Link href="/dashboard/messages" passHref>
-                               <SidebarMenuButton variant="ghost" size="sm" isActive={isActive('/dashboard/messages')}>
-                                   {app.icon}
-                                   <span>{app.name}</span>
-                                </SidebarMenuButton>
-                            </Link>
-                        </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </CollapsibleContent>
-          </Collapsible>
+            if (item.type === 'item') {
+              return (
+                <SidebarMenuItem key={index}>
+                  <Link href={item.href} passHref>
+                    <SidebarMenuButton
+                      isActive={isActive(item.href)}
+                      tooltip={item.label}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              )
+            }
 
-          <SidebarMenuItem>
-            <Link href="/dashboard/settings" passHref>
-              <SidebarMenuButton
-                isActive={isActive('/dashboard/settings')}
-                tooltip="Settings"
-              >
-                <Settings />
-                <span>Settings</span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
+            if (item.type === 'collapsible') {
+              return (
+                 <Collapsible key={index} defaultOpen={isSubActive(item.paths)}>
+                    <CollapsibleTrigger asChild className="w-full">
+                         <SidebarMenuButton isActive={isSubActive(item.paths)} className="w-full">
+                            {item.icon}
+                            <span>{item.label}</span>
+                            <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                        </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <SidebarMenu className="pl-6 py-1">
+                          {item.subItems.map((subItem, subIndex) => (
+                             <SidebarMenuItem key={subIndex}>
+                                <Link href={subItem.href} passHref>
+                                  <SidebarMenuButton variant="ghost" size="sm" isActive={isActive(subItem.href)}>
+                                    {subItem.icon} 
+                                    <span>{subItem.label}</span>
+                                  </SidebarMenuButton>
+                                </Link>
+                            </SidebarMenuItem>
+                          ))}
+                        </SidebarMenu>
+                    </CollapsibleContent>
+                  </Collapsible>
+              )
+            }
+          })}
         </SidebarMenu>
       </SidebarContent>
 

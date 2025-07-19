@@ -1,3 +1,6 @@
+
+"use client"
+
 import * as React from "react"
 import { Bell, Camera, Crop, Download, PanelTopOpen, Search } from "lucide-react"
 
@@ -26,10 +29,12 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  const [search, setSearch] = React.useState("")
+
   return (
     <SidebarProvider>
       <Sidebar>
-        <DashboardSidebar />
+        <DashboardSidebar search={search} />
       </Sidebar>
       <SidebarInset className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
@@ -42,6 +47,8 @@ export default function DashboardLayout({
                   type="search"
                   placeholder="Search features..."
                   className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
             </form>
