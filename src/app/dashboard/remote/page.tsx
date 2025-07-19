@@ -18,41 +18,39 @@ export default function RemotePage() {
 
     React.useEffect(() => {
         const getCameraPermission = async () => {
-          if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
-            try {
-              const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-              setHasCameraPermission(true);
-      
-              if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-              }
-            } catch (error) {
-              console.error('Error accessing camera:', error);
-              setHasCameraPermission(false);
-            }
-          } else {
+          if (isScreenMirroring || typeof navigator === 'undefined' || !navigator.mediaDevices) {
             setHasCameraPermission(false);
+            return;
+          }
+      
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            setHasCameraPermission(true);
+      
+            if (videoRef.current) {
+              videoRef.current.srcObject = stream;
+            }
+          } catch (error) {
+            console.error('Error accessing camera:', error);
+            setHasCameraPermission(false);
+            toast({
+              variant: 'destructive',
+              title: 'Camera Access Denied',
+              description: 'Please enable camera permissions in your browser settings to use this feature.',
+            });
           }
         };
       
-        if (!isScreenMirroring) {
-            getCameraPermission();
-        } else {
-            // Cleanup camera stream when switching to screen mirroring
-            if (videoRef.current && videoRef.current.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                stream.getTracks().forEach(track => track.stop());
-                videoRef.current.srcObject = null;
-            }
-        }
+        getCameraPermission();
       
         return () => {
-            if (videoRef.current && videoRef.current.srcObject) {
-              const stream = videoRef.current.srcObject as MediaStream;
-              stream.getTracks().forEach(track => track.stop());
-            }
-          };
-      }, [isScreenMirroring]);
+          if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
+            videoRef.current.srcObject = null;
+          }
+        };
+      }, [isScreenMirroring, toast]);
     
     const handleScreenMirrorToggle = () => {
         const newIsScreenMirroring = !isScreenMirroring;
@@ -69,32 +67,7 @@ export default function RemotePage() {
             });
         }
     }
-
-    const renderCameraOverlay = () => {
-        if (hasCameraPermission === null) {
-            return (
-                <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
-                    <p>Requesting camera permission...</p>
-                </div>
-            );
-        }
-        if (hasCameraPermission === false) {
-            return (
-                <div className="absolute inset-0 bg-muted/80 flex flex-col items-center justify-center p-4">
-                    <Camera className="w-16 h-16 text-muted-foreground mb-4" />
-                    <Alert variant="destructive" className="w-full max-w-sm">
-                        <AlertTitle>Camera Access Required</AlertTitle>
-                        <AlertDescription>
-                            Please allow camera access in your browser to use this feature.
-                        </AlertDescription>
-                    </Alert>
-                </div>
-            );
-        }
-        return null;
-    }
-
-
+    
     return (
         <div className="py-6 space-y-6">
             <h1 className="text-2xl font-bold">Remote Control</h1>
@@ -115,10 +88,22 @@ export default function RemotePage() {
                                     </div>
                                 ) : (
                                     <div className="w-full h-full relative">
-                                       {hasCameraPermission === true ? (
-                                            <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
-                                        ) : (
-                                            renderCameraOverlay()
+                                        <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline hidden={!hasCameraPermission} />
+                                        {hasCameraPermission === null && (
+                                            <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
+                                                <p>Requesting camera permission...</p>
+                                            </div>
+                                        )}
+                                        {hasCameraPermission === false && (
+                                            <div className="absolute inset-0 bg-muted/80 flex flex-col items-center justify-center p-4">
+                                                <Camera className="w-16 h-16 text-muted-foreground mb-4" />
+                                                <Alert variant="destructive" className="w-full max-w-sm">
+                                                    <AlertTitle>Camera Access Required</AlertTitle>
+                                                    <AlertDescription>
+                                                        Please allow camera access in your browser to use this feature.
+                                                    </AlertDescription>
+                                                </Alert>
+                                            </div>
                                         )}
                                     </div>
                                 )}
