@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { ContentAnalysis } from '@/components/content-analysis';
 
 export default function RemotePage() {
     const { toast } = useToast();
@@ -16,6 +17,16 @@ export default function RemotePage() {
     const [isScreenMirroring, setIsScreenMirroring] = React.useState(false);
 
     React.useEffect(() => {
+        if (isScreenMirroring) {
+            if (videoRef.current && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
+                videoRef.current.srcObject = null;
+            }
+            setHasCameraPermission(null);
+            return;
+        };
+
         const getCameraPermission = async () => {
           if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
             try {
@@ -39,9 +50,7 @@ export default function RemotePage() {
           }
         };
       
-        if (!isScreenMirroring) {
-          getCameraPermission();
-        }
+        getCameraPermission();
       
         return () => {
             if (videoRef.current && videoRef.current.srcObject) {
@@ -85,10 +94,10 @@ export default function RemotePage() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <>
-                                        {hasCameraPermission && <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />}
+                                    <div className="w-full h-full relative">
+                                        <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
                                         {hasCameraPermission === false && (
-                                            <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center p-4">
+                                            <div className="absolute inset-0 bg-muted/80 flex flex-col items-center justify-center p-4">
                                                 <Camera className="w-16 h-16 text-muted-foreground mb-4" />
                                                 <Alert variant="destructive" className="w-full max-w-sm">
                                                     <AlertTitle>Camera Access Required</AlertTitle>
@@ -103,7 +112,7 @@ export default function RemotePage() {
                                                 <p>Requesting camera permission...</p>
                                              </div>
                                         )}
-                                    </>
+                                    </div>
                                 )}
                             </div>
                             {!isScreenMirroring && (
@@ -152,4 +161,3 @@ export default function RemotePage() {
         </div>
     );
 }
-
