@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Bell, Search } from "lucide-react"
+import { Bell, Camera, Crop, Download, PanelTopOpen, Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -14,6 +14,11 @@ import { Input } from "@/components/ui/input"
 import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 export default function DashboardLayout({
   children,
@@ -64,8 +69,33 @@ export default function DashboardLayout({
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex-1 p-4 sm:px-6 sm:py-0 md:gap-8 bg-background">
+        <main className="flex-1 p-4 sm:px-6 sm:py-0 md:gap-8 bg-background relative">
           {children}
+          <div className="fixed bottom-6 left-6 z-50">
+             <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="default" size="icon" className="rounded-full w-14 h-14 shadow-lg">
+                    <PanelTopOpen className="h-6 w-6" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-2" side="top" align="start">
+                <div className="flex flex-col gap-2">
+                   <Button variant="ghost" className="justify-start">
+                     <Camera className="mr-2 h-4 w-4" />
+                    Selfie
+                  </Button>
+                  <Button variant="ghost" className="justify-start">
+                    <Crop className="mr-2 h-4 w-4" />
+                    Screenshot
+                  </Button>
+                  <Button variant="ghost" className="justify-start">
+                    <Download className="mr-2 h-4 w-4" />
+                    Data Export
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </main>
       </SidebarInset>
     </SidebarProvider>

@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Settings,
   Smartphone,
+  Video,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -39,7 +40,7 @@ export function DashboardSidebar() {
   const pathname = usePathname()
 
   const isActive = (path: string) => {
-    return pathname === path
+    return pathname === path || (path.length > 10 && pathname.startsWith(path))
   }
 
   return (
@@ -85,6 +86,17 @@ export function DashboardSidebar() {
               >
                 <LayoutDashboard />
                 <span>Dashboard</span>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+           <SidebarMenuItem>
+            <Link href="/dashboard/remote" passHref>
+              <SidebarMenuButton
+                isActive={isActive('/dashboard/remote')}
+                tooltip="Remote"
+              >
+                <Video />
+                <span>Remote</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
