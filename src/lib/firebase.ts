@@ -6,8 +6,9 @@ import { getDatabase } from "firebase/database";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// #################################################################
+// #### আপনার নিজের ফায়ারবেস প্রজেক্টের তথ্য এখানে যোগ করুন ####
+// #################################################################
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -17,6 +18,8 @@ const firebaseConfig = {
   messagingSenderId: "SENDER_ID",
   appId: "APP_ID"
 };
+// #################################################################
+// #################################################################
 
 
 // Initialize Firebase
