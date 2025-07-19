@@ -18,13 +18,18 @@ export default function RemotePage() {
 
     React.useEffect(() => {
         if (isScreenMirroring) {
-            setHasCameraPermission(false);
             return;
         }
 
         let stream: MediaStream | null = null;
         const getCameraPermission = async () => {
           if (typeof navigator === 'undefined' || !navigator.mediaDevices) {
+            console.error("Media devices not supported");
+            toast({
+              variant: 'destructive',
+              title: 'Feature Not Supported',
+              description: 'Your browser does not support camera access.',
+            });
             setHasCameraPermission(false);
             return;
           }
@@ -108,7 +113,7 @@ export default function RemotePage() {
                                                 <Alert variant="destructive" className="w-full max-w-sm">
                                                     <AlertTitle>Camera Access Required</AlertTitle>
                                                     <AlertDescription>
-                                                        Please allow camera access in your browser to use this feature.
+                                                        Please allow camera access in your browser to use this feature. Your browser might not support this feature.
                                                     </AlertDescription>
                                                 </Alert>
                                             </div>
