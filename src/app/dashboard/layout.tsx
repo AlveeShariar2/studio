@@ -1,8 +1,11 @@
-
 "use client"
 
 import * as React from "react"
-import { Bell, Camera, Crop, Download, PanelTopOpen, Search } from "lucide-react"
+import { Bell, Camera, Crop, Download, PanelTopOpen, Search, LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuthState } from "react-firebase-hooks/auth"
+import { signOut } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -23,11 +26,47 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useToast } from "@/hooks/use-toast"
 
 export default function DashboardLayout({
   children,
 }: React.PropsWithChildren<{}>) {
   const [search, setSearch] = React.useState("")
+  const [user, loading, error] = useAuthState(auth)
+  const router = useRouter()
+  const { toast } = useToast()
+
+  React.useEffect(() => {
+    if (!loading && !user) {
+      router.push('/')
+    }
+  }, [user, loading, router])
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({ title: 'Logged out successfully.' });
+      router.push('/');
+    } catch (error) {
+      toast({
+        title: 'Logout Failed',
+        description: 'An error occurred while logging out.',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return null; // or a redirect component
+  }
 
   return (
     <SidebarProvider>
@@ -71,7 +110,10 @@ export default function DashboardLayout({
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

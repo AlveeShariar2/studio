@@ -1,15 +1,15 @@
-
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Activity, AppWindow, BatteryFull, Calendar, Clock, Image as ImageIcon, KeyRound, MapPin, MessageCircle, Phone, Wifi, Smartphone } from "lucide-react";
+import { useObjectVal } from "react-firebase-hooks/database";
+import { ref } from "firebase/database";
+import { db } from "@/lib/firebase";
+
+import { BatteryFull, MapPin, Wifi, Smartphone, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { listenToChildData } from "@/lib/child-data";
 
 const topCalls = [
   { name: "John Doe", number: "(555) 123-4567", type: "Outgoing", duration: "5m 21s", date: "2024-07-29 10:15" },
@@ -24,15 +24,7 @@ const topMessages = [
 ]
 
 export default function DashboardPage() {
-  const [childData, setChildData] = useState<any>(null);
-
-  useEffect(() => {
-    const unsubscribe = listenToChildData((data) => {
-      setChildData(data);
-    });
-    // This will automatically stop listening when the component unmounts
-    return () => unsubscribe();
-  }, []);
+  const [childData, loading, error] = useObjectVal(ref(db, 'childData/'));
 
   return (
     <div className="py-6 space-y-6">
@@ -50,9 +42,15 @@ export default function DashboardPage() {
             <CardDescription>This data is coming live from Firebase Realtime Database.</CardDescription>
         </CardHeader>
         <CardContent className="text-sm">
-            <pre className="p-4 bg-muted rounded-lg overflow-auto">
-                {childData ? JSON.stringify(childData, null, 2) : "Loading data..."}
-            </pre>
+            <div className="p-4 bg-muted rounded-lg overflow-auto min-h-[100px] flex items-center justify-center">
+              {loading && <Loader2 className="h-6 w-6 animate-spin text-primary" />}
+              {error && <p className="text-destructive">Error: {error.message}</p>}
+              {!loading && !error && (
+                <pre>
+                  {childData ? JSON.stringify(childData, null, 2) : "No data available."}
+                </pre>
+              )}
+            </div>
         </CardContent>
       </Card>
 
@@ -81,7 +79,7 @@ export default function DashboardPage() {
                     <CardTitle>Top 8 Call Logs</CardTitle>
                     <CardDescription>A summary of the most recent calls.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="max-h-[300px] overflow-auto">
                      <Table>
                         <TableHeader><TableRow><TableHead>Contact</TableHead><TableHead>Type</TableHead><TableHead>Duration</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
                         <TableBody>
@@ -106,7 +104,7 @@ export default function DashboardPage() {
                     <CardTitle>Top 8 Messages</CardTitle>
                     <CardDescription>A summary of the most recent messages.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="max-h-[300px] overflow-auto">
                      <Table>
                         <TableHeader><TableRow><TableHead>From</TableHead><TableHead>Message</TableHead><TableHead>Time</TableHead></TableRow></TableHeader>
                         <TableBody>
@@ -147,7 +145,7 @@ export default function DashboardPage() {
                         <div key={i} className="aspect-square bg-muted rounded-md">
                              <Image 
                                 src={`https://placehold.co/100x100.png?id=${i}`}
-                                alt={`Recent photo ${i+1}`}
+                                alt={`Recent photo ${i + 1}`}
                                 width={100}
                                 height={100}
                                 className="rounded-md object-cover w-full h-full"
