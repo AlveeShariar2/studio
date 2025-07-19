@@ -15,6 +15,7 @@ export default function RemotePage() {
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null);
     const [isScreenMirroring, setIsScreenMirroring] = React.useState(false);
+    const toastShownRef = React.useRef(false);
 
     React.useEffect(() => {
         if (isScreenMirroring) {
@@ -25,11 +26,14 @@ export default function RemotePage() {
         const getCameraPermission = async () => {
           if (typeof navigator === 'undefined' || !navigator.mediaDevices) {
             console.error("Media devices not supported");
-            toast({
-              variant: 'destructive',
-              title: 'Feature Not Supported',
-              description: 'Your browser does not support camera access.',
-            });
+            if (!toastShownRef.current) {
+                toast({
+                  variant: 'destructive',
+                  title: 'Feature Not Supported',
+                  description: 'Your browser does not support camera access.',
+                });
+                toastShownRef.current = true;
+            }
             setHasCameraPermission(false);
             return;
           }
@@ -44,11 +48,14 @@ export default function RemotePage() {
           } catch (error) {
             console.error('Error accessing camera:', error);
             setHasCameraPermission(false);
-            toast({
-              variant: 'destructive',
-              title: 'Camera Access Denied',
-              description: 'Please enable camera permissions in your browser settings to use this feature.',
-            });
+            if (!toastShownRef.current) {
+                toast({
+                  variant: 'destructive',
+                  title: 'Camera Access Denied',
+                  description: 'Please enable camera permissions in your browser settings to use this feature.',
+                });
+                toastShownRef.current = true;
+            }
           }
         };
       
