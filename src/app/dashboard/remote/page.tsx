@@ -1,8 +1,9 @@
+
 "use client"
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Camera, Mic, ScreenShare, Video } from "lucide-react";
+import { Camera, Mic, ScreenShare, Video, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
@@ -12,6 +13,7 @@ export default function RemotePage() {
     const { toast } = useToast();
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null);
+    const [isScreenMirroring, setIsScreenMirroring] = React.useState(false);
 
     React.useEffect(() => {
         const getCameraPermission = async () => {
@@ -26,23 +28,15 @@ export default function RemotePage() {
                 } catch (error) {
                     console.error('Error accessing camera:', error);
                     setHasCameraPermission(false);
-                    toast({
-                        variant: 'destructive',
-                        title: 'Camera Access Denied',
-                        description: 'Please enable camera permissions in your browser settings to use this app.',
-                    });
                 }
             } else {
                  setHasCameraPermission(false);
-                 toast({
-                    variant: 'destructive',
-                    title: 'Camera Not Supported',
-                    description: 'Your browser does not support camera access.',
-                });
             }
         };
 
-        getCameraPermission();
+        if (!isScreenMirroring) {
+            getCameraPermission();
+        }
 
         return () => {
             if (videoRef.current && videoRef.current.srcObject) {
@@ -50,7 +44,22 @@ export default function RemotePage() {
                 stream.getTracks().forEach(track => track.stop());
             }
         }
-    }, [toast]);
+    }, [toast, isScreenMirroring]);
+    
+    const handleScreenMirrorToggle = () => {
+        if (!isScreenMirroring) {
+            toast({
+                title: 'Screen Mirroring Started',
+                description: 'Live screen sharing has begun.',
+            });
+        } else {
+             toast({
+                title: 'Screen Mirroring Stopped',
+                description: 'Live screen sharing has ended.',
+            });
+        }
+        setIsScreenMirroring(!isScreenMirroring);
+    }
 
     return (
         <div className="py-6 space-y-6">
@@ -59,39 +68,51 @@ export default function RemotePage() {
                 <div className="lg:col-span-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Live Camera Feed</CardTitle>
-                            <CardDescription>View a real-time feed from the device's camera.</CardDescription>
+                            <CardTitle>{isScreenMirroring ? "Live Screen Mirroring" : "Live Camera Feed"}</CardTitle>
+                            <CardDescription>{isScreenMirroring ? "Real-time view of the device screen." : "View a real-time feed from the device's camera."}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative">
-                                <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
-                                {hasCameraPermission === false && (
-                                    <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center p-4">
-                                        <Camera className="w-16 h-16 text-muted-foreground mb-4" />
-                                        <Alert variant="destructive" className="w-full max-w-sm">
-                                            <AlertTitle>Camera Access Required</AlertTitle>
-                                            <AlertDescription>
-                                                Please allow camera access in your browser to use this feature.
-                                            </AlertDescription>
-                                        </Alert>
+                                {isScreenMirroring ? (
+                                     <div className="w-full h-full bg-black rounded-lg p-4 flex justify-center items-center">
+                                        <div className="w-full h-full">
+                                            <iframe src="/dashboard" className="w-full h-full rounded-md border-2 border-slate-700" title="Screen Mirror"></iframe>
+                                        </div>
                                     </div>
-                                )}
-                                {hasCameraPermission === null && (
-                                     <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
-                                        <p>Requesting camera permission...</p>
-                                     </div>
+                                ) : (
+                                    <>
+                                        <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
+                                        {hasCameraPermission === false && (
+                                            <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center p-4">
+                                                <Camera className="w-16 h-16 text-muted-foreground mb-4" />
+                                                <Alert variant="destructive" className="w-full max-w-sm">
+                                                    <AlertTitle>Camera Access Required</AlertTitle>
+                                                    <AlertDescription>
+                                                        Please allow camera access in your browser to use this feature.
+                                                    </AlertDescription>
+                                                </Alert>
+                                            </div>
+                                        )}
+                                        {hasCameraPermission === null && (
+                                             <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
+                                                <p>Requesting camera permission...</p>
+                                             </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
-                            <div className="flex items-center justify-between mt-4">
-                               <div className="flex items-center space-x-2">
-                                <Switch id="camera-switch" defaultChecked/>
-                                <Label htmlFor="camera-switch">Front Camera</Label>
-                               </div>
-                                <Button>
-                                    <Camera className="mr-2 h-4 w-4" />
-                                    Take Snapshot
-                                </Button>
-                            </div>
+                            {!isScreenMirroring && (
+                                <div className="flex items-center justify-between mt-4">
+                                   <div className="flex items-center space-x-2">
+                                    <Switch id="camera-switch" defaultChecked/>
+                                    <Label htmlFor="camera-switch">Front Camera</Label>
+                                   </div>
+                                    <Button>
+                                        <Camera className="mr-2 h-4 w-4" />
+                                        Take Snapshot
+                                    </Button>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
@@ -102,17 +123,21 @@ export default function RemotePage() {
                             <CardDescription>Control various device functions remotely.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <Button className="w-full justify-start">
+                             <Button 
+                                className="w-full justify-start"
+                                onClick={handleScreenMirrorToggle}
+                                variant={isScreenMirroring ? "destructive" : "default"}
+                            >
+                                {isScreenMirroring ? <X className="mr-2 h-4 w-4" /> : <ScreenShare className="mr-2 h-4 w-4" />}
+                                {isScreenMirroring ? "Stop Live Screen Sharing" : "Start Live Screen Sharing"}
+                            </Button>
+                            <Button className="w-full justify-start" disabled={isScreenMirroring}>
                                 <Video className="mr-2 h-4 w-4" />
                                 Start Screen Recording
                             </Button>
-                            <Button className="w-full justify-start">
+                            <Button className="w-full justify-start" disabled={isScreenMirroring}>
                                 <Mic className="mr-2 h-4 w-4" />
                                 Start Surround Recording
-                            </Button>
-                             <Button className="w-full justify-start">
-                                <ScreenShare className="mr-2 h-4 w-4" />
-                                Start Live Screen Sharing
                             </Button>
                         </CardContent>
                     </Card>
