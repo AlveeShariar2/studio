@@ -18,56 +18,55 @@ export default function RemotePage() {
     const toastShownRef = React.useRef(false);
 
     React.useEffect(() => {
-        if (isScreenMirroring) {
-            return;
-        }
-
         let stream: MediaStream | null = null;
+    
         const getCameraPermission = async () => {
-          if (typeof navigator === 'undefined' || !navigator.mediaDevices) {
-            console.error("Media devices not supported");
-            if (!toastShownRef.current) {
-                toast({
-                  variant: 'destructive',
-                  title: 'Feature Not Supported',
-                  description: 'Your browser does not support camera access.',
-                });
-                toastShownRef.current = true;
+            if (typeof navigator === 'undefined' || !navigator.mediaDevices) {
+                console.error("Media devices not supported");
+                if (!toastShownRef.current) {
+                    toast({
+                        variant: 'destructive',
+                        title: 'Feature Not Supported',
+                        description: 'Your browser does not support camera access.',
+                    });
+                    toastShownRef.current = true;
+                }
+                setHasCameraPermission(false);
+                return;
             }
-            setHasCameraPermission(false);
-            return;
-          }
-      
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            setHasCameraPermission(true);
-      
-            if (videoRef.current) {
-              videoRef.current.srcObject = stream;
+    
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                setHasCameraPermission(true);
+    
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                setHasCameraPermission(false);
+                if (!toastShownRef.current) {
+                    toast({
+                        variant: 'destructive',
+                        title: 'Camera Access Denied',
+                        description: 'Please enable camera permissions in your browser settings to use this feature.',
+                    });
+                    toastShownRef.current = true;
+                }
             }
-          } catch (error) {
-            console.error('Error accessing camera:', error);
-            setHasCameraPermission(false);
-            if (!toastShownRef.current) {
-                toast({
-                  variant: 'destructive',
-                  title: 'Camera Access Denied',
-                  description: 'Please enable camera permissions in your browser settings to use this feature.',
-                });
-                toastShownRef.current = true;
-            }
-          }
         };
-      
-        getCameraPermission();
-      
+    
+        if (!isScreenMirroring) {
+            getCameraPermission();
+        }
+    
         return () => {
-          if (stream) {
-              stream.getTracks().forEach(track => track.stop());
-          }
-          if (videoRef.current) {
-            videoRef.current.srcObject = null;
-          }
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (videoRef.current && videoRef.current.srcObject) {
+                videoRef.current.srcObject = null;
+            }
         };
     }, [isScreenMirroring, toast]);
     
