@@ -6,20 +6,23 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 
 const appUsage = [
-  { name: "YouTube", usage: "1h 30m", usagePercent: 40, status: "Allowed", icon: "/youtube.svg" },
-  { name: "TikTok", usage: "45m", usagePercent: 20, status: "Allowed", icon: "/tiktok.svg" },
-  { name: "Instagram", usage: "30m", usagePercent: 15, status: "Blocked", icon: "/instagram.svg" },
-  { name: "GameZone", usage: "25m", usagePercent: 12, status: "Allowed", icon: "/gamezone.svg" },
-  { name: "Browser", usage: "15m", usagePercent: 8, status: "Allowed", icon: "/browser.svg" },
+  { name: "YouTube", usage: "1h 30m", usagePercent: 40, status: "Allowed", icon: "https://placehold.co/32x32.png" },
+  { name: "TikTok", usage: "45m", usagePercent: 20, status: "Allowed", icon: "https://placehold.co/32x32.png" },
+  { name: "Instagram", usage: "30m", usagePercent: 15, status: "Blocked", icon: "https://placehold.co/32x32.png" },
+  { name: "GameZone", usage: "25m", usagePercent: 12, status: "Allowed", icon: "https://placehold.co/32x32.png" },
+  { name: "Browser", usage: "15m", usagePercent: 8, status: "Allowed", icon: "https://placehold.co/32x32.png" },
 ];
 
-const AppIcon = ({ name }: { name: string }) => {
-    // In a real app, you'd have actual icons. We'll use initials as fallback.
-    const initial = name.charAt(0).toUpperCase();
+const AppIcon = ({ src, name }: { src: string, name: string }) => {
     return (
-        <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center font-bold text-muted-foreground">
-            {initial}
-        </div>
+        <Image 
+            src={src} 
+            alt={`${name} icon`} 
+            width={32} 
+            height={32} 
+            className="w-8 h-8 rounded-md"
+            data-ai-hint="app logo"
+        />
     )
 }
 
@@ -47,7 +50,7 @@ export default function AppsPage() {
                                 <TableRow key={app.name}>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-3">
-                                            <AppIcon name={app.name} />
+                                            <AppIcon src={app.icon} name={app.name} />
                                             <span>{app.name}</span>
                                         </div>
                                     </TableCell>

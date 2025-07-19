@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge";
+import { ContentAnalysis } from "@/components/content-analysis";
 
 const callLogs = [
   { type: "Outgoing", number: "(555) 123-4567", duration: "5m 21s", time: "15m ago" },
@@ -25,62 +26,69 @@ export default function MessagesPage() {
   return (
     <div className="py-6 space-y-6">
       <h1 className="text-2xl font-bold">Communications Monitoring</h1>
-      <Card>
-        <CardHeader>
-             <CardTitle>Logs &amp; Messages</CardTitle>
-            <CardDescription>Track all calls, texts, and social media conversations.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Tabs defaultValue="calls">
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="calls">Call Logs</TabsTrigger>
-                    <TabsTrigger value="sms">SMS Messages</TabsTrigger>
-                    <TabsTrigger value="social">Social Media</TabsTrigger>
-                </TabsList>
-                <TabsContent value="calls">
-                     <Table>
-                        <TableHeader><TableRow><TableHead>Type</TableHead><TableHead>Number</TableHead><TableHead>Duration</TableHead><TableHead>Time</TableHead></TableRow></TableHeader>
-                        <TableBody>
-                            {callLogs.map((log, i) => (
-                                <TableRow key={i}><TableCell><Badge variant={log.type === 'Missed' ? 'destructive' : 'outline'}>{log.type}</Badge></TableCell><TableCell>{log.number}</TableCell><TableCell>{log.duration}</TableCell><TableCell>{log.time}</TableCell></TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TabsContent>
-                <TabsContent value="sms">
-                     <Table>
-                        <TableHeader><TableRow><TableHead>From</TableHead><TableHead>Message</TableHead><TableHead>Time</TableHead><TableHead>Risk</TableHead></TableRow></TableHeader>
-                        <TableBody>
-                            {smsMessages.map((msg, i) => (
-                                <TableRow key={i} className={msg.risk ? "bg-destructive/10" : ""}>
-                                    <TableCell>{msg.from}</TableCell>
-                                    <TableCell className="max-w-xs truncate">{msg.message}</TableCell>
-                                    <TableCell>{msg.time}</TableCell>
-                                    <TableCell>{msg.risk && <Badge variant="destructive">Flagged</Badge>}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TabsContent>
-                <TabsContent value="social">
-                    <Table>
-                        <TableHeader><TableRow><TableHead>App</TableHead><TableHead>From/Group</TableHead><TableHead>Message</TableHead><TableHead>Time</TableHead><TableHead>Risk</TableHead></TableRow></TableHeader>
-                        <TableBody>
-                             {socialMedia.map((msg, i) => (
-                                <TableRow key={i} className={msg.risk ? "bg-destructive/10" : ""}>
-                                    <TableCell><Badge variant="secondary">{msg.app}</Badge></TableCell>
-                                    <TableCell>{msg.from}</TableCell>
-                                    <TableCell className="max-w-xs truncate">{msg.message}</TableCell>
-                                    <TableCell>{msg.time}</TableCell>
-                                    <TableCell>{msg.risk && <Badge variant="destructive">Flagged</Badge>}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TabsContent>
-            </Tabs>
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+            <Card>
+            <CardHeader>
+                <CardTitle>Logs &amp; Messages</CardTitle>
+                <CardDescription>Track all calls, texts, and social media conversations.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Tabs defaultValue="calls">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="calls">Call Logs</TabsTrigger>
+                        <TabsTrigger value="sms">SMS Messages</TabsTrigger>
+                        <TabsTrigger value="social">Social Media</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="calls">
+                        <Table>
+                            <TableHeader><TableRow><TableHead>Type</TableHead><TableHead>Number</TableHead><TableHead>Duration</TableHead><TableHead>Time</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {callLogs.map((log, i) => (
+                                    <TableRow key={i}><TableCell><Badge variant={log.type === 'Missed' ? 'destructive' : 'outline'}>{log.type}</Badge></TableCell><TableCell>{log.number}</TableCell><TableCell>{log.duration}</TableCell><TableCell>{log.time}</TableCell></TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TabsContent>
+                    <TabsContent value="sms">
+                        <Table>
+                            <TableHeader><TableRow><TableHead>From</TableHead><TableHead>Message</TableHead><TableHead>Time</TableHead><TableHead>Risk</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {smsMessages.map((msg, i) => (
+                                    <TableRow key={i} className={msg.risk ? "bg-destructive/10" : ""}>
+                                        <TableCell>{msg.from}</TableCell>
+                                        <TableCell className="max-w-xs truncate">{msg.message}</TableCell>
+                                        <TableCell>{msg.time}</TableCell>
+                                        <TableCell>{msg.risk && <Badge variant="destructive">Flagged</Badge>}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TabsContent>
+                    <TabsContent value="social">
+                        <Table>
+                            <TableHeader><TableRow><TableHead>App</TableHead><TableHead>From/Group</TableHead><TableHead>Message</TableHead><TableHead>Time</TableHead><TableHead>Risk</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {socialMedia.map((msg, i) => (
+                                    <TableRow key={i} className={msg.risk ? "bg-destructive/10" : ""}>
+                                        <TableCell><Badge variant="secondary">{msg.app}</Badge></TableCell>
+                                        <TableCell>{msg.from}</TableCell>
+                                        <TableCell className="max-w-xs truncate">{msg.message}</TableCell>
+                                        <TableCell>{msg.time}</TableCell>
+                                        <TableCell>{msg.risk && <Badge variant="destructive">Flagged</Badge>}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TabsContent>
+                </Tabs>
+            </CardContent>
+            </Card>
+        </div>
+        <div className="space-y-6">
+            <ContentAnalysis />
+        </div>
+      </div>
     </div>
   )
 }
