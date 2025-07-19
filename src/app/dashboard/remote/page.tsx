@@ -55,6 +55,14 @@ export default function RemotePage() {
     const handleScreenMirrorToggle = () => {
         const newIsScreenMirroring = !isScreenMirroring;
         setIsScreenMirroring(newIsScreenMirroring);
+
+        // Stop camera stream when switching to screen mirror
+        if (newIsScreenMirroring && videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
+            videoRef.current.srcObject = null;
+        }
+
         if (newIsScreenMirroring) {
             toast({
                 title: 'Screen Mirroring Started',
@@ -88,7 +96,7 @@ export default function RemotePage() {
                                     </div>
                                 ) : (
                                     <div className="w-full h-full relative">
-                                        <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline hidden={!hasCameraPermission} />
+                                        <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline hidden={hasCameraPermission !== true} />
                                         {hasCameraPermission === null && (
                                             <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
                                                 <p>Requesting camera permission...</p>
@@ -114,7 +122,7 @@ export default function RemotePage() {
                                     <Switch id="camera-switch" defaultChecked/>
                                     <Label htmlFor="camera-switch">Front Camera</Label>
                                    </div>
-                                    <Button disabled={!hasCameraPermission}>
+                                    <Button disabled={hasCameraPermission !== true}>
                                         <Camera className="mr-2 h-4 w-4" />
                                         Take Snapshot
                                     </Button>
