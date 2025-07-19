@@ -17,14 +17,20 @@ export default function RemotePage() {
     const [isScreenMirroring, setIsScreenMirroring] = React.useState(false);
 
     React.useEffect(() => {
+        if (isScreenMirroring) {
+            setHasCameraPermission(false);
+            return;
+        }
+
+        let stream: MediaStream | null = null;
         const getCameraPermission = async () => {
-          if (isScreenMirroring || typeof navigator === 'undefined' || !navigator.mediaDevices) {
+          if (typeof navigator === 'undefined' || !navigator.mediaDevices) {
             setHasCameraPermission(false);
             return;
           }
       
           try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
             setHasCameraPermission(true);
       
             if (videoRef.current) {
@@ -44,9 +50,10 @@ export default function RemotePage() {
         getCameraPermission();
       
         return () => {
-          if (videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach(track => track.stop());
+          if (stream) {
+              stream.getTracks().forEach(track => track.stop());
+          }
+          if (videoRef.current) {
             videoRef.current.srcObject = null;
           }
         };
@@ -55,13 +62,6 @@ export default function RemotePage() {
     const handleScreenMirrorToggle = () => {
         const newIsScreenMirroring = !isScreenMirroring;
         setIsScreenMirroring(newIsScreenMirroring);
-
-        // Stop camera stream when switching to screen mirror
-        if (newIsScreenMirroring && videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach(track => track.stop());
-            videoRef.current.srcObject = null;
-        }
 
         if (newIsScreenMirroring) {
             toast({
