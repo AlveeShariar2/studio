@@ -2,7 +2,11 @@
 "use client"
 
 import * as React from "react"
-import { Bell, Camera, Crop, Download, PanelTopOpen, Search } from "lucide-react"
+import { Bell, Camera, Crop, Download, LogOut, PanelTopOpen, Search } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuthState } from "react-firebase-hooks/auth"
+import { signOut } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -30,6 +34,23 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [search, setSearch] = React.useState("")
+  const [user, loading] = useAuthState(auth);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!loading && !user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+  
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/');
+  }
+
+  if (loading || !user) {
+      return <div className="flex h-screen items-center justify-center">Loading...</div>
+  }
 
   return (
     <SidebarProvider>
@@ -62,8 +83,8 @@ export default function DashboardLayout({
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://placehold.co/100x100.png" alt="@admin" data-ai-hint="person user" />
-                    <AvatarFallback>AD</AvatarFallback>
+                    <AvatarImage src={user.photoURL || "https://placehold.co/100x100.png"} alt={user.email || "@admin"} data-ai-hint="person user" />
+                    <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Toggle user menu</span>
               </Button>
@@ -74,7 +95,10 @@ export default function DashboardLayout({
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4"/>
+                <span>Logout</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
