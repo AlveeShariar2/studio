@@ -1,3 +1,4 @@
+
 'use client'
 
 import Link from "next/link"
@@ -127,8 +128,8 @@ export function DashboardSidebar() {
           </SidebarMenuItem>
           
           <Collapsible defaultOpen={isSubActive(phoneFilesPaths)}>
-            <CollapsibleTrigger className="w-full">
-                 <SidebarMenuButton asChild={false} isActive={isSubActive(phoneFilesPaths)} className="w-full">
+            <CollapsibleTrigger asChild className="w-full">
+                 <SidebarMenuButton isActive={isSubActive(phoneFilesPaths)} className="w-full">
                     <FileText />
                     <span>Phone Files</span>
                     <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -171,8 +172,8 @@ export function DashboardSidebar() {
           </Collapsible>
         
           <Collapsible defaultOpen={isSubActive(locationPaths)}>
-            <CollapsibleTrigger className="w-full">
-                 <SidebarMenuButton asChild={false} isActive={isSubActive(locationPaths)} className="w-full">
+            <CollapsibleTrigger asChild className="w-full">
+                 <SidebarMenuButton isActive={isSubActive(locationPaths)} className="w-full">
                     <MapPin />
                     <span>Location Tracking</span>
                     <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -195,8 +196,8 @@ export function DashboardSidebar() {
           </Collapsible>
 
           <Collapsible defaultOpen={isSubActive(remoteControlPaths)}>
-            <CollapsibleTrigger className="w-full">
-                 <SidebarMenuButton asChild={false} isActive={isSubActive(remoteControlPaths)} className="w-full">
+            <CollapsibleTrigger asChild className="w-full">
+                 <SidebarMenuButton isActive={isSubActive(remoteControlPaths)} className="w-full">
                     <Clapperboard />
                     <span>Remote Control</span>
                     <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -219,8 +220,8 @@ export function DashboardSidebar() {
           </Collapsible>
           
            <Collapsible defaultOpen={isSubActive(socialAppPaths)}>
-            <CollapsibleTrigger className="w-full">
-                 <SidebarMenuButton asChild={false} isActive={isSubActive(socialAppPaths)} className="w-full">
+            <CollapsibleTrigger asChild className="w-full">
+                 <SidebarMenuButton isActive={isSubActive(socialAppPaths)} className="w-full">
                     <Users />
                     <span>Social Apps</span>
                     <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />

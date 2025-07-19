@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -11,7 +12,7 @@ const CollapsibleTrigger = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CollapsiblePrimitive.Trigger
     ref={ref}
-    className="group"
+    className={cn("group", className)}
     {...props}
   />
 ))
