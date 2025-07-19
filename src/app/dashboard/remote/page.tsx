@@ -49,7 +49,7 @@ export default function RemotePage() {
               stream.getTracks().forEach(track => track.stop());
             }
           };
-      }, [isScreenMirroring, toast]);
+      }, [isScreenMirroring]);
     
     const handleScreenMirrorToggle = () => {
         if (!isScreenMirroring) {
