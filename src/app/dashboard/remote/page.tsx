@@ -42,6 +42,14 @@ export default function RemotePage() {
       
         if (!isScreenMirroring) {
             getCameraPermission();
+        } else {
+            // Cleanup camera stream when switching to screen mirroring
+            if (videoRef.current && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
+                videoRef.current.srcObject = null;
+            }
+            setHasCameraPermission(null);
         }
       
         return () => {
@@ -53,15 +61,8 @@ export default function RemotePage() {
       }, [isScreenMirroring, toast]);
     
     const handleScreenMirrorToggle = () => {
+        setIsScreenMirroring(prev => !prev);
         if (!isScreenMirroring) {
-            // Stop camera stream if it's running
-            if (videoRef.current && videoRef.current.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                stream.getTracks().forEach(track => track.stop());
-                videoRef.current.srcObject = null;
-            }
-            setHasCameraPermission(null);
-
             toast({
                 title: 'Screen Mirroring Started',
                 description: 'Live screen sharing has begun.',
@@ -72,8 +73,33 @@ export default function RemotePage() {
                 description: 'Live screen sharing has ended.',
             });
         }
-        setIsScreenMirroring(!isScreenMirroring);
     }
+
+    const renderCameraFeed = () => {
+        if (hasCameraPermission === null) {
+            return (
+                <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
+                    <p>Requesting camera permission...</p>
+                </div>
+            );
+        }
+        if (hasCameraPermission === false) {
+            return (
+                <div className="absolute inset-0 bg-muted/80 flex flex-col items-center justify-center p-4">
+                    <Camera className="w-16 h-16 text-muted-foreground mb-4" />
+                    <Alert variant="destructive" className="w-full max-w-sm">
+                        <AlertTitle>Camera Access Required</AlertTitle>
+                        <AlertDescription>
+                            Please allow camera access in your browser to use this feature.
+                        </AlertDescription>
+                    </Alert>
+                </div>
+            );
+        }
+        // Video tag is always rendered, but content inside depends on permission
+        return null;
+    }
+
 
     return (
         <div className="py-6 space-y-6">
@@ -96,22 +122,7 @@ export default function RemotePage() {
                                 ) : (
                                     <div className="w-full h-full relative">
                                         <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
-                                        {hasCameraPermission === false && (
-                                            <div className="absolute inset-0 bg-muted/80 flex flex-col items-center justify-center p-4">
-                                                <Camera className="w-16 h-16 text-muted-foreground mb-4" />
-                                                <Alert variant="destructive" className="w-full max-w-sm">
-                                                    <AlertTitle>Camera Access Required</AlertTitle>
-                                                    <AlertDescription>
-                                                        Please allow camera access in your browser to use this feature.
-                                                    </AlertDescription>
-                                                </Alert>
-                                            </div>
-                                        )}
-                                        {hasCameraPermission === null && (
-                                             <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
-                                                <p>Requesting camera permission...</p>
-                                             </div>
-                                        )}
+                                        {renderCameraFeed()}
                                     </div>
                                 )}
                             </div>
