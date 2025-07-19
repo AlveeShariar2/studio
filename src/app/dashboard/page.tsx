@@ -1,122 +1,172 @@
-import { Activity, AppWindow, Clock, MessageCircleWarning } from "lucide-react";
+import { Activity, AppWindow, BatteryFull, Calendar, Clock, Image as ImageIcon, KeyRound, MapPin, MessageCircle, Phone, Wifi } from "lucide-react";
 import Image from "next/image";
-import { StatsCard } from "@/components/stats-card";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ContentAnalysis } from "@/components/content-analysis";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
-const recentActivities = [
-  {
-    icon: <AppWindow className="h-4 w-4" />,
-    description: "New app installed: 'GameZone'",
-    time: "5m ago",
-    bgColor: "bg-blue-100 dark:bg-blue-900/50",
-    iconColor: "text-blue-500",
-  },
-  {
-    icon: <MessageCircleWarning className="h-4 w-4" />,
-    description: "Flagged message detected in WhatsApp",
-    time: "1h ago",
-    bgColor: "bg-red-100 dark:bg-red-900/50",
-    iconColor: "text-red-500",
-  },
-  {
-    icon: <Clock className="h-4 w-4" />,
-    description: "Screen time limit reached for YouTube",
-    time: "3h ago",
-    bgColor: "bg-yellow-100 dark:bg-yellow-900/50",
-    iconColor: "text-yellow-500",
-  },
-  {
-    icon: <Activity className="h-4 w-4" />,
-    description: "Unusual activity detected after 10 PM",
-    time: "5h ago",
-    bgColor: "bg-purple-100 dark:bg-purple-900/50",
-    iconColor: "text-purple-500",
-  },
+const topCalls = [
+  { name: "John Doe", number: "(555) 123-4567", type: "Outgoing", duration: "5m 21s", date: "2024-07-29 10:15" },
+  { name: "Jane Smith", number: "Unknown", type: "Incoming", duration: "10m 02s", date: "2024-07-29 09:30" },
+  { name: "Tech Support", number: "(555) 987-6543", type: "Missed", duration: "0s", date: "2024-07-29 08:00" },
 ];
+
+const topMessages = [
+  { from: "John Doe", message: "Hey, are you coming to the park?", time: "20m ago" },
+  { from: "(555) 555-5555", message: "URGENT: Your account is locked. Click here...", time: "2h ago" },
+  { from: "Mom", message: "Dinner is at 7 PM!", time: "4h ago" },
+]
 
 export default function DashboardPage() {
   return (
     <div className="py-6 space-y-6">
-       <div className="flex items-center justify-between">
+       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">Sam's Phone Dashboard</h1>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Account Status: <Badge variant="default" className="bg-accent text-accent-foreground">Premium</Badge></span>
+            <span>Expires: 2025-07-29</span>
+          </div>
         </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Screen Time Today"
-          value="3h 45m"
-          description="+15% from yesterday"
-          icon={<Clock className="h-5 w-5 text-muted-foreground" />}
-        />
-        <StatsCard
-          title="Flagged Messages"
-          value="2"
-          description="In WhatsApp & SMS"
-          icon={<MessageCircleWarning className="h-5 w-5 text-muted-foreground" />}
-          variant="destructive"
-        />
-        <StatsCard
-          title="Most Used App"
-          value="YouTube"
-          description="1h 30m of usage"
-          icon={<AppWindow className="h-5 w-5 text-muted-foreground" />}
-        />
-         <StatsCard
-          title="Current Location"
-          value="Greenwood Park"
-          description="Updated 2m ago"
-          icon={<Activity className="h-5 w-5 text-muted-foreground" />}
-        />
-      </div>
+
+      <Card>
+        <CardHeader>
+            <CardTitle>Device Information</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="flex items-center gap-2">
+                <BatteryFull className="h-5 w-5 text-primary" />
+                <div>
+                    <p className="font-semibold">Battery</p>
+                    <p className="text-muted-foreground">95%</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                <div>
+                    <p className="font-semibold">GPS Status</p>
+                    <p className="text-muted-foreground">On</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2">
+                <Wifi className="h-5 w-5 text-primary" />
+                <div>
+                    <p className="font-semibold">Wi-Fi</p>
+                    <p className="text-muted-foreground">Home_Network_5G</p>
+                </div>
+            </div>
+             <div className="flex items-center gap-2">
+                <Smartphone className="h-5 w-5 text-primary" />
+                <div>
+                    <p className="font-semibold">Device Status</p>
+                    <p className="text-muted-foreground">Online</p>
+                </div>
+            </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Live Screen View</CardTitle>
-                    <CardDescription>A real-time mirror of the device screen.</CardDescription>
+                    <CardTitle>Current Location & Geo-Fencing</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                         <Image 
                             src="https://placehold.co/1280x720.png" 
-                            alt="Live screen placeholder" 
+                            alt="Map showing current location" 
                             width={1280} 
                             height={720} 
                             className="rounded-md object-cover"
-                            data-ai-hint="mobile phone screen"
+                            data-ai-hint="world map"
                         />
                     </div>
                 </CardContent>
             </Card>
             
-            <ContentAnalysis />
+            <Card>
+                <CardHeader>
+                    <CardTitle>Top 8 Call Logs</CardTitle>
+                    <CardDescription>A summary of the most recent calls.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <Table>
+                        <TableHeader><TableRow><TableHead>Contact</TableHead><TableHead>Type</TableHead><TableHead>Duration</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            {topCalls.map((call, i) => (
+                                <TableRow key={i}>
+                                    <TableCell>
+                                        <div className="font-medium">{call.name}</div>
+                                        <div className="text-xs text-muted-foreground">{call.number}</div>
+                                    </TableCell>
+                                    <TableCell><Badge variant={call.type === 'Missed' ? 'destructive' : 'outline'}>{call.type}</Badge></TableCell>
+                                    <TableCell>{call.duration}</TableCell>
+                                    <TableCell>{call.date}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle>Top 8 Messages</CardTitle>
+                    <CardDescription>A summary of the most recent messages.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <Table>
+                        <TableHeader><TableRow><TableHead>From</TableHead><TableHead>Message</TableHead><TableHead>Time</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            {topMessages.map((msg, i) => (
+                                <TableRow key={i}>
+                                    <TableCell className="font-medium">{msg.from}</TableCell>
+                                    <TableCell className="max-w-xs truncate">{msg.message}</TableCell>
+                                    <TableCell>{msg.time}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+
         </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>A log of the latest events from the device.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activity.bgColor} ${activity.iconColor}`}>
-                    {activity.icon}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{activity.description}</p>
-                  </div>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Last Known Location</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2 text-sm">
+                        <p className="font-semibold">Greenwood Park</p>
+                        <p className="text-muted-foreground">123 Park Ave, Springfield</p>
+                        <p className="text-muted-foreground">Updated: 2m ago</p>
+                        <Button variant="link" className="p-0 h-auto">View on map</Button>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent Photos</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-3 gap-2">
+                    {Array.from({length: 6}).map((_, i) => (
+                        <div key={i} className="aspect-square bg-muted rounded-md">
+                             <Image 
+                                src={`https://placehold.co/100x100.png?id=${i}`}
+                                alt={`Recent photo ${i+1}`}
+                                width={100}
+                                height={100}
+                                className="rounded-md object-cover w-full h-full"
+                                data-ai-hint="children park"
+                            />
+                        </div>
+                    ))}
+                </CardContent>
+            </Card>
+        </div>
       </div>
     </div>
   );
