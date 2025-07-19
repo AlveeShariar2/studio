@@ -62,7 +62,7 @@ export default function RemotePage() {
             videoRef.current.srcObject = null;
           }
         };
-      }, [isScreenMirroring, toast]);
+    }, [isScreenMirroring, toast]);
     
     const handleScreenMirrorToggle = () => {
         const newIsScreenMirroring = !isScreenMirroring;
