@@ -29,11 +29,6 @@ export default function RemotePage() {
             } catch (error) {
               console.error('Error accessing camera:', error);
               setHasCameraPermission(false);
-              toast({
-                variant: 'destructive',
-                title: 'Camera Access Denied',
-                description: 'Please enable camera permissions in your browser settings to use this feature.',
-              });
             }
           } else {
             setHasCameraPermission(false);
@@ -50,7 +45,7 @@ export default function RemotePage() {
               stream.getTracks().forEach(track => track.stop());
             }
           };
-      }, [isScreenMirroring, toast]);
+      }, [isScreenMirroring]);
     
     const handleScreenMirrorToggle = () => {
         if (!isScreenMirroring) {
@@ -107,7 +102,7 @@ export default function RemotePage() {
                                                 </Alert>
                                             </div>
                                         )}
-                                        {hasCameraPermission === null && !isScreenMirroring && (
+                                        {hasCameraPermission === null && (
                                              <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
                                                 <p>Requesting camera permission...</p>
                                              </div>
