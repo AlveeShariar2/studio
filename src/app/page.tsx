@@ -55,7 +55,7 @@ export default function LoginPage() {
             <Logo className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">SurokkhaNet</CardTitle>
-          <CardDescription>Sign in to access the parental control dashboard.</CardDescription>
+          <CardDescription>Enter your admin credentials to access the dashboard.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
