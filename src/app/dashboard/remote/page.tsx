@@ -29,11 +29,6 @@ export default function RemotePage() {
             } catch (error) {
               console.error('Error accessing camera:', error);
               setHasCameraPermission(false);
-              toast({
-                variant: 'destructive',
-                title: 'Camera Access Denied',
-                description: 'Please enable camera permissions in your browser settings to use this feature.',
-              });
             }
           } else {
             setHasCameraPermission(false);
@@ -49,7 +44,6 @@ export default function RemotePage() {
                 stream.getTracks().forEach(track => track.stop());
                 videoRef.current.srcObject = null;
             }
-            setHasCameraPermission(null);
         }
       
         return () => {
@@ -58,11 +52,12 @@ export default function RemotePage() {
               stream.getTracks().forEach(track => track.stop());
             }
           };
-      }, [isScreenMirroring, toast]);
+      }, [isScreenMirroring]);
     
     const handleScreenMirrorToggle = () => {
-        setIsScreenMirroring(prev => !prev);
-        if (!isScreenMirroring) {
+        const newIsScreenMirroring = !isScreenMirroring;
+        setIsScreenMirroring(newIsScreenMirroring);
+        if (newIsScreenMirroring) {
             toast({
                 title: 'Screen Mirroring Started',
                 description: 'Live screen sharing has begun.',
@@ -75,7 +70,7 @@ export default function RemotePage() {
         }
     }
 
-    const renderCameraFeed = () => {
+    const renderCameraOverlay = () => {
         if (hasCameraPermission === null) {
             return (
                 <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
@@ -96,7 +91,6 @@ export default function RemotePage() {
                 </div>
             );
         }
-        // Video tag is always rendered, but content inside depends on permission
         return null;
     }
 
@@ -121,8 +115,11 @@ export default function RemotePage() {
                                     </div>
                                 ) : (
                                     <div className="w-full h-full relative">
-                                        <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
-                                        {renderCameraFeed()}
+                                       {hasCameraPermission === true ? (
+                                            <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
+                                        ) : (
+                                            renderCameraOverlay()
+                                        )}
                                     </div>
                                 )}
                             </div>
