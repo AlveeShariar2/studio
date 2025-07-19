@@ -86,7 +86,7 @@ export default function RemotePage() {
                                     </div>
                                 ) : (
                                     <>
-                                        <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
+                                        {hasCameraPermission && <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />}
                                         {hasCameraPermission === false && (
                                             <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center p-4">
                                                 <Camera className="w-16 h-16 text-muted-foreground mb-4" />
@@ -146,8 +146,10 @@ export default function RemotePage() {
                             </Button>
                         </CardContent>
                     </Card>
+                    <ContentAnalysis />
                 </div>
             </div>
         </div>
     );
 }
+
