@@ -17,34 +17,39 @@ export default function RemotePage() {
 
     React.useEffect(() => {
         const getCameraPermission = async () => {
-            if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    setHasCameraPermission(true);
-
-                    if (videoRef.current) {
-                        videoRef.current.srcObject = stream;
-                    }
-                } catch (error) {
-                    console.error('Error accessing camera:', error);
-                    setHasCameraPermission(false);
-                }
-            } else {
-                 setHasCameraPermission(false);
+          if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
+            try {
+              const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+              setHasCameraPermission(true);
+      
+              if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+              }
+            } catch (error) {
+              console.error('Error accessing camera:', error);
+              setHasCameraPermission(false);
+              toast({
+                variant: 'destructive',
+                title: 'Camera Access Denied',
+                description: 'Please enable camera permissions in your browser settings to use this feature.',
+              });
             }
+          } else {
+            setHasCameraPermission(false);
+          }
         };
-
+      
         if (!isScreenMirroring) {
-            getCameraPermission();
+          getCameraPermission();
         }
-
+      
         return () => {
             if (videoRef.current && videoRef.current.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                stream.getTracks().forEach(track => track.stop());
+              const stream = videoRef.current.srcObject as MediaStream;
+              stream.getTracks().forEach(track => track.stop());
             }
-        }
-    }, [toast, isScreenMirroring]);
+          };
+      }, [isScreenMirroring, toast]);
     
     const handleScreenMirrorToggle = () => {
         if (!isScreenMirroring) {
