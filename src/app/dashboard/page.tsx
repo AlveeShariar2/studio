@@ -1,4 +1,4 @@
-import { Activity, AppWindow, BatteryFull, Calendar, Clock, Image as ImageIcon, KeyRound, MapPin, MessageCircle, Phone, Wifi } from "lucide-react";
+import { Activity, AppWindow, BatteryFull, Calendar, Clock, Image as ImageIcon, KeyRound, MapPin, MessageCircle, Phone, Wifi, Smartphone } from "lucide-react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
