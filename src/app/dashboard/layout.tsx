@@ -1,7 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { Bell, Camera, Crop, Download, PanelTopOpen, Search } from "lucide-react"
+import { Bell, Camera, Crop, Download, LogOut, PanelTopOpen, Search } from "lucide-react"
+import { useRouter } from 'next/navigation'
+import { signOut } from "firebase/auth"
+import { auth } from "@/lib/firebase"
+
 
 import { Button } from "@/components/ui/button"
 import {
@@ -22,11 +26,27 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useToast } from "@/hooks/use-toast"
 
 export default function DashboardLayout({
   children,
-}: React.PropsWithChildren<{}>) {
+}: {
+  children: React.ReactNode
+}) {
   const [search, setSearch] = React.useState("")
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({ title: "Logged out successfully." });
+      router.push('/');
+    } catch (error) {
+      toast({ title: "Logout failed", description: "An error occurred while logging out.", variant: "destructive" });
+    }
+  };
+
 
   return (
     <SidebarProvider>
@@ -46,22 +66,23 @@ export default function DashboardLayout({
                   className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Search features"
                 />
               </div>
             </form>
           </div>
           <ThemeToggle />
-          <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Notifications">
+          <Button variant="outline" size="icon" className="h-8 w-8">
             <Bell className="h-4 w-4" />
+            <span className="sr-only">Toggle notifications</span>
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full" aria-label="User menu">
+              <Button variant="secondary" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="https://placehold.co/100x100.png" alt="Admin avatar" />
-                  <AvatarFallback>AD</AvatarFallback>
+                    <AvatarImage src="https://placehold.co/100x100.png" alt="@admin" />
+                    <AvatarFallback>AD</AvatarFallback>
                 </Avatar>
+                <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -70,28 +91,26 @@ export default function DashboardLayout({
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
         <main className="flex-1 p-4 sm:px-6 sm:py-0 md:gap-8 bg-background relative">
           {children}
           <div className="fixed bottom-6 left-6 z-50">
-            <Popover>
+             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="default"
-                  size="icon"
-                  className="rounded-full w-14 h-14 shadow-lg"
-                  aria-label="Quick actions"
-                >
-                  <PanelTopOpen className="h-6 w-6" />
+                <Button variant="default" size="icon" className="rounded-full w-14 h-14 shadow-lg">
+                    <PanelTopOpen className="h-6 w-6" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-2" side="top" align="start">
                 <div className="flex flex-col gap-2">
-                  <Button variant="ghost" className="justify-start">
-                    <Camera className="mr-2 h-4 w-4" />
+                   <Button variant="ghost" className="justify-start">
+                     <Camera className="mr-2 h-4 w-4" />
                     Selfie
                   </Button>
                   <Button variant="ghost" className="justify-start">
