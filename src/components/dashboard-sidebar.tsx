@@ -1,3 +1,4 @@
+
 'use client'
 
 import Link from "next/link"
@@ -21,6 +22,7 @@ import {
   Monitor,
   Users,
   Clapperboard,
+  PlusCircle,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -34,6 +36,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
@@ -57,11 +60,10 @@ const socialApps = [
     { name: "Telegram", icon: <MessageSquare /> },
 ]
 
-export function DashboardSidebar({ search }: { search?: string }) {
+export function DashboardSidebar({ search, onAddDeviceClick }: { search?: string; onAddDeviceClick: () => void }) {
   const pathname = usePathname()
 
   const isActive = (path: string) => {
-    // Exact match for dashboard, startsWith for others.
     if (path === '/dashboard') {
       return pathname === path;
     }
@@ -157,6 +159,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
     }).filter((item): item is NonNullable<typeof item> => item !== null);
   }, [search, menuItems]);
 
+
   return (
     <>
       <SidebarHeader>
@@ -186,6 +189,11 @@ export function DashboardSidebar({ search }: { search?: string }) {
               <DropdownMenuItem>
                 <Smartphone className="h-4 w-4 mr-2" />
                 <span>Aria's Tablet</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={onAddDeviceClick}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                <span>Add New Device</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

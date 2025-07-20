@@ -27,6 +27,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { AddDeviceDialog } from "@/components/add-device-dialog"
 
 export default function DashboardLayout({
   children,
@@ -34,6 +35,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [search, setSearch] = React.useState("")
+  const [isAddDeviceOpen, setIsAddDeviceOpen] = React.useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -55,7 +57,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <Sidebar>
-        <DashboardSidebar search={search} />
+        <DashboardSidebar search={search} onAddDeviceClick={() => setIsAddDeviceOpen(true)} />
       </Sidebar>
       <SidebarInset className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
@@ -92,7 +94,7 @@ export default function DashboardLayout({
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push('/dashboard/settings')}>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
@@ -128,6 +130,7 @@ export default function DashboardLayout({
           </div>
         </main>
       </SidebarInset>
+      <AddDeviceDialog open={isAddDeviceOpen} onOpenChange={setIsAddDeviceOpen} />
     </SidebarProvider>
   )
 }
