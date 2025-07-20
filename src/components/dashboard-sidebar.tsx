@@ -24,9 +24,8 @@ import {
   Clapperboard,
   PlusCircle,
 } from "lucide-react"
+import { type User } from "firebase/auth"
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import {
   Collapsible,
   CollapsibleContent,
@@ -50,6 +49,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/icons/logo"
 
 const socialApps = [
@@ -60,7 +60,13 @@ const socialApps = [
     { name: "Telegram", icon: <MessageSquare /> },
 ]
 
-export function DashboardSidebar({ search, onAddDeviceClick }: { search?: string; onAddDeviceClick: () => void }) {
+interface DashboardSidebarProps {
+  search?: string;
+  onAddDeviceClick: () => void;
+  user: User | null;
+}
+
+export function DashboardSidebar({ search, onAddDeviceClick, user }: DashboardSidebarProps) {
   const pathname = usePathname()
 
   const isActive = (path: string) => {
@@ -144,14 +150,14 @@ export function DashboardSidebar({ search, onAddDeviceClick }: { search?: string
         return item.label.toLowerCase().includes(query) ? item : null;
       }
       if (item.type === 'collapsible') {
-        const filteredSubItems = item.subItems.filter(sub => 
+        const subItems = item.subItems.filter(sub => 
           sub.label.toLowerCase().includes(query)
         );
 
-        if (item.label.toLowerCase().includes(query) || filteredSubItems.length > 0) {
+        if (item.label.toLowerCase().includes(query) || subItems.length > 0) {
           return { 
             ...item, 
-            subItems: item.label.toLowerCase().includes(query) ? item.subItems : filteredSubItems 
+            subItems: item.label.toLowerCase().includes(query) ? item.subItems : subItems 
           };
         }
       }
@@ -159,6 +165,10 @@ export function DashboardSidebar({ search, onAddDeviceClick }: { search?: string
     }).filter((item): item is NonNullable<typeof item> => item !== null);
   }, [search, menuItems]);
 
+  const getAvatarFallback = (email: string | null | undefined) => {
+    if (!email) return "AD"
+    return email.substring(0, 2).toUpperCase()
+  }
 
   return (
     <>
@@ -228,7 +238,7 @@ export function DashboardSidebar({ search, onAddDeviceClick }: { search?: string
                         {item.subItems.map((sub, j) => (
                            <SidebarMenuItem key={`${sub.href}-${j}`}>
                               <Link href={sub.href} passHref>
-                                <SidebarMenuButton variant="ghost" size="sm" isActive={isActive(sub.href)}>
+                                <SidebarMenuButton variant="ghost" size="sm" isActive={isActive(sub.href) && pathname === sub.href}>
                                   {sub.icon} 
                                   <span>{sub.label}</span>
                                 </SidebarMenuButton>
@@ -249,13 +259,13 @@ export function DashboardSidebar({ search, onAddDeviceClick }: { search?: string
         <Separator className="my-2" />
         <div className="flex items-center gap-3 p-2 rounded-md hover:bg-sidebar-accent">
           <Avatar className="h-10 w-10">
-            <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person user"/>
-            <AvatarFallback>AD</AvatarFallback>
+            <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} data-ai-hint="person user"/>
+            <AvatarFallback>{getAvatarFallback(user?.email)}</AvatarFallback>
           </Avatar>
-          <div className="flex flex-col">
-            <span className="font-semibold">Admin</span>
-            <span className="text-sm text-muted-foreground">
-              admin@surokkha.net
+          <div className="flex flex-col overflow-hidden">
+            <span className="font-semibold truncate">{user?.displayName || "Admin"}</span>
+            <span className="text-sm text-muted-foreground truncate">
+              {user?.email || "admin@surokkha.net"}
             </span>
           </div>
         </div>

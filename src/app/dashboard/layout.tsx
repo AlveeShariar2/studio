@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -27,8 +28,11 @@ import {
 } from "@/components/ui/popover"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AddDeviceDialog } from "@/components/add-device-dialog"
+import withAuth from "@/components/auth/withAuth"
+import { useAuth } from "@/hooks/use-auth"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export default function DashboardLayout({
+function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
@@ -37,6 +41,7 @@ export default function DashboardLayout({
   const [isAddDeviceOpen, setIsAddDeviceOpen] = React.useState(false)
   const router = useRouter()
   const { toast } = useToast()
+  const { user, loading } = useAuth()
 
   const handleLogout = async () => {
     try {
@@ -53,10 +58,28 @@ export default function DashboardLayout({
     }
   }
 
+  const getAvatarFallback = (email: string | null | undefined) => {
+    if (!email) return "AD"
+    return email.substring(0, 2).toUpperCase()
+  }
+
   return (
     <SidebarProvider>
       <Sidebar>
-        <DashboardSidebar search={search} onAddDeviceClick={() => setIsAddDeviceOpen(true)} />
+        {loading ? (
+            <div className="p-4 space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+            </div>
+        ) : (
+            <DashboardSidebar 
+              search={search} 
+              onAddDeviceClick={() => setIsAddDeviceOpen(true)} 
+              user={user}
+            />
+        )}
       </Sidebar>
       <SidebarInset className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
@@ -83,15 +106,15 @@ export default function DashboardLayout({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
-                <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://placehold.co/100x100.png" alt="@admin" data-ai-hint="person user" />
-                    <AvatarFallback>AD</AvatarFallback>
+                 <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt={user?.email || "user"} data-ai-hint="person user" />
+                    <AvatarFallback>{getAvatarFallback(user?.email)}</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{user?.email || "My Account"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => router.push('/dashboard/settings')}>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
@@ -133,3 +156,5 @@ export default function DashboardLayout({
     </SidebarProvider>
   )
 }
+
+export default withAuth(DashboardLayout);
