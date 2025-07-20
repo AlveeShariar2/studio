@@ -1,4 +1,3 @@
-
 'use client'
 
 import Link from "next/link"
@@ -73,11 +72,6 @@ export function DashboardSidebar({ search }: { search?: string }) {
     return paths.some(p => isActive(p));
   }
 
-  const phoneFilesPaths = ["/dashboard/messages", "/dashboard/media", "/dashboard/history", "/dashboard/apps"];
-  const locationPaths = ["/dashboard/location"];
-  const remoteControlPaths = ["/dashboard/remote"];
-  const socialAppPaths = ["/dashboard/social"];
-  
   const menuItems = React.useMemo(() => [
     {
       type: 'item' as const,
@@ -89,7 +83,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
       type: 'collapsible' as const,
       icon: <FileText />,
       label: 'Phone Files',
-      paths: phoneFilesPaths,
+      paths: ["/dashboard/messages", "/dashboard/media", "/dashboard/history", "/dashboard/apps"],
       subItems: [
         { href: '/dashboard/messages', icon: <Phone />, label: 'Call Logs' },
         { href: '/dashboard/messages', icon: <MessageSquare />, label: 'Messages' },
@@ -103,7 +97,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
       type: 'collapsible' as const,
       icon: <MapPin />,
       label: 'Location Tracking',
-      paths: locationPaths,
+      paths: ["/dashboard/location"],
       subItems: [
         { href: '/dashboard/location', icon: <MapPin />, label: 'Location' },
         { href: '/dashboard/location', icon: <Shield />, label: 'Geofence' },
@@ -113,7 +107,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
       type: 'collapsible' as const,
       icon: <Clapperboard />,
       label: 'Remote Control',
-      paths: remoteControlPaths,
+      paths: ["/dashboard/remote"],
       subItems: [
         { href: '/dashboard/remote', icon: <Monitor />, label: 'Record Screen' },
         { href: '/dashboard/remote', icon: <Camera />, label: 'Take Photos' },
@@ -123,7 +117,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
       type: 'collapsible' as const,
       icon: <Users />,
       label: 'Social Apps',
-      paths: socialAppPaths,
+      paths: ["/dashboard/social"],
       subItems: socialApps.map(app => ({
         href: '/dashboard/messages',
         icon: app.icon,
@@ -226,7 +220,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
                         {item.subItems.map((sub, j) => (
                            <SidebarMenuItem key={`${sub.href}-${j}`}>
                               <Link href={sub.href} passHref>
-                                <SidebarMenuButton variant="ghost" size="sm" isActive={pathname === sub.href}>
+                                <SidebarMenuButton variant="ghost" size="sm" isActive={isActive(sub.href)}>
                                   {sub.icon} 
                                   <span>{sub.label}</span>
                                 </SidebarMenuButton>
