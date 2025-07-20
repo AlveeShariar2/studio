@@ -70,8 +70,8 @@ export default function SettingsPage() {
                         <AccordionItem value="item-2">
                             <AccordionTrigger>Content Filtering</AccordionTrigger>
                             <AccordionContent className="space-y-4">
-                                <p className="text-sm text-muted-foreground">Block websites and content containing specific keywords.</p>
-                                <div className="space-y-2">
+                               <p className="text-sm text-muted-foreground">Block websites and content containing specific keywords.</p>
+                               <div className="space-y-2">
                                     <Label>Blocked Keywords</Label>
                                     <div className="space-y-2">
                                         {keywords.map(keyword => (
@@ -83,7 +83,7 @@ export default function SettingsPage() {
                                             </div>
                                         ))}
                                     </div>
-                                </div>
+                               </div>
                                 <div className="flex gap-2">
                                     <Input 
                                         placeholder="Add a new keyword..." 
@@ -98,7 +98,7 @@ export default function SettingsPage() {
                         <AccordionItem value="item-3">
                             <AccordionTrigger>Stealth &amp; Remote Features</AccordionTrigger>
                             <AccordionContent className="space-y-4">
-                                <div className="flex items-center justify-between rounded-lg border p-4">
+                                 <div className="flex items-center justify-between rounded-lg border p-4">
                                     <div>
                                         <Label htmlFor="stealth-mode" className="font-semibold">Stealth Mode</Label>
                                         <p className="text-xs text-muted-foreground">Hide the SurokkhaNet app icon on the device.</p>
@@ -112,7 +112,7 @@ export default function SettingsPage() {
                                     </div>
                                     <Switch id="remote-control" checked={remoteControl} onCheckedChange={setRemoteControl} />
                                 </div>
-                                <div className="flex items-center justify-between rounded-lg border p-4">
+                                 <div className="flex items-center justify-between rounded-lg border p-4">
                                     <div>
                                         <Label htmlFor="call-recording" className="font-semibold">Call Recording</Label>
                                         <p className="text-xs text-muted-foreground">Automatically record incoming and outgoing calls.</p>
