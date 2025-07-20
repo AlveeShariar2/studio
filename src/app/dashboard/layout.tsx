@@ -83,7 +83,7 @@ export default function DashboardLayout({
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://placehold.co/100x100.png" alt="@admin" />
+                    <AvatarImage src="https://placehold.co/100x100.png" alt="@admin" data-ai-hint="person user" />
                     <AvatarFallback>AD</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Toggle user menu</span>
