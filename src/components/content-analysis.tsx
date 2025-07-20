@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -68,6 +69,7 @@ export function ContentAnalysis() {
             )}
           </Button>
         </form>
+
         {result && (
           <div className="mt-6 space-y-4 rounded-lg border bg-secondary/50 p-4">
             <h3 className="font-semibold">Analysis Result</h3>
@@ -87,9 +89,7 @@ export function ContentAnalysis() {
                   <p className="font-medium">Risk Types:</p>
                   <div className="flex flex-wrap gap-2 mt-1">
                     {result.riskAssessment.riskTypes.map((risk, i) => (
-                      <Badge key={i} variant="outline">
-                        {risk}
-                      </Badge>
+                      <Badge key={i} variant="outline">{risk}</Badge>
                     ))}
                   </div>
                 </div>
@@ -103,9 +103,7 @@ export function ContentAnalysis() {
             ) : (
               <div className="flex items-center gap-2">
                 <span className="font-medium">Status:</span>
-                <Badge className="bg-accent text-accent-foreground hover:bg-accent/80">
-                  No Risks Found
-                </Badge>
+                <Badge className="bg-accent text-accent-foreground hover:bg-accent/80">No Risks Found</Badge>
               </div>
             )}
           </div>
