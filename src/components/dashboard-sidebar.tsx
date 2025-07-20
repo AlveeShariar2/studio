@@ -1,4 +1,3 @@
-
 'use client'
 
 import Link from "next/link"
@@ -62,7 +61,6 @@ export function DashboardSidebar({ search }: { search?: string }) {
   const pathname = usePathname()
 
   const isActive = (path: string) => {
-    // Exact match for dashboard, startsWith for others.
     if (path === '/dashboard') {
       return pathname === path;
     }
@@ -78,15 +76,15 @@ export function DashboardSidebar({ search }: { search?: string }) {
   const remoteControlPaths = ["/dashboard/remote"];
   const socialAppPaths = ["/dashboard/social"];
   
-  const menuItems = [
+  const menuItems = React.useMemo(() => [
     {
-      type: 'item',
+      type: 'item' as const,
       href: '/dashboard',
       icon: <LayoutDashboard />,
       label: 'Dashboard',
     },
     {
-      type: 'collapsible',
+      type: 'collapsible' as const,
       icon: <FileText />,
       label: 'Phone Files',
       paths: phoneFilesPaths,
@@ -100,7 +98,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
       ],
     },
     {
-      type: 'collapsible',
+      type: 'collapsible' as const,
       icon: <MapPin />,
       label: 'Location Tracking',
       paths: locationPaths,
@@ -110,7 +108,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
       ],
     },
     {
-      type: 'collapsible',
+      type: 'collapsible' as const,
       icon: <Clapperboard />,
       label: 'Remote Control',
       paths: remoteControlPaths,
@@ -120,7 +118,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
       ],
     },
     {
-      type: 'collapsible',
+      type: 'collapsible' as const,
       icon: <Users />,
       label: 'Social Apps',
       paths: socialAppPaths,
@@ -131,45 +129,37 @@ export function DashboardSidebar({ search }: { search?: string }) {
       })),
     },
      {
-      type: 'item',
+      type: 'item' as const,
       href: '/dashboard/settings',
       icon: <Settings />,
       label: 'Settings',
     },
-  ];
+  ], []);
 
   const filteredMenuItems = React.useMemo(() => {
-    if (!search || search.trim() === '') return menuItems;
+    if (!search?.trim()) return menuItems;
 
-    const lowerCaseSearch = search.toLowerCase();
+    const query = search.toLowerCase();
 
     return menuItems.map(item => {
       if (item.type === 'item') {
-        return item.label.toLowerCase().includes(lowerCaseSearch) ? item : null;
+        return item.label.toLowerCase().includes(query) ? item : null;
       }
       if (item.type === 'collapsible') {
-        const hasMatchingSubItems = item.subItems.some(subItem => 
-          subItem.label.toLowerCase().includes(lowerCaseSearch)
+        const filteredSubItems = item.subItems.filter(sub => 
+          sub.label.toLowerCase().includes(query)
         );
 
-        // If the main item matches or it has matching sub-items, include it.
-        if (item.label.toLowerCase().includes(lowerCaseSearch) || hasMatchingSubItems) {
-            // If the search doesn't match the main label, only show matching sub-items.
-            if (!item.label.toLowerCase().includes(lowerCaseSearch) && hasMatchingSubItems) {
-                const filteredSubItems = item.subItems.filter(subItem => 
-                    subItem.label.toLowerCase().includes(lowerCaseSearch)
-                );
-                return { ...item, subItems: filteredSubItems };
-            }
-            // Otherwise, show the whole group
-            return item;
+        if (item.label.toLowerCase().includes(query) || filteredSubItems.length > 0) {
+          return { 
+            ...item, 
+            subItems: item.label.toLowerCase().includes(query) ? item.subItems : filteredSubItems 
+          };
         }
-        return null;
       }
       return null;
-    }).filter(Boolean);
+    }).filter((item): item is NonNullable<typeof item> => item !== null);
   }, [search, menuItems]);
-
 
   return (
     <>
@@ -194,11 +184,11 @@ export function DashboardSidebar({ search }: { search?: string }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[var(--sidebar-width)]">
               <DropdownMenuItem>
-                <Smartphone className="w-4 h-4 mr-2" />
+                <Smartphone className="h-4 w-4 mr-2" />
                 <span>Sam's Phone</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Smartphone className="w-4 h-4 mr-2" />
+                <Smartphone className="h-4 w-4 mr-2" />
                 <span>Aria's Tablet</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -206,52 +196,47 @@ export function DashboardSidebar({ search }: { search?: string }) {
         </SidebarGroup>
 
         <SidebarMenu>
-          {filteredMenuItems.map((item, index) => {
-            if (!item) return null;
-
+          {filteredMenuItems.map((item, i) => {
             if (item.type === 'item') {
               return (
-                <SidebarMenuItem key={index}>
+                <SidebarMenuItem key={`${item.href}-${i}`}>
                   <Link href={item.href} passHref>
-                    <SidebarMenuButton
-                      isActive={isActive(item.href)}
-                      tooltip={item.label}
-                    >
+                    <SidebarMenuButton isActive={isActive(item.href)} tooltip={item.label}>
                       {item.icon}
                       <span>{item.label}</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
-              )
+              );
             }
-
             if (item.type === 'collapsible') {
               return (
-                 <Collapsible key={index} defaultOpen={isSubActive(item.paths)}>
-                    <CollapsibleTrigger asChild className="w-full">
-                        <SidebarMenuButton isActive={isSubActive(item.paths)} className="w-full">
-                            {item.icon}
-                            <span>{item.label}</span>
-                            <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                        </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                        <SidebarMenu className="pl-6 py-1">
-                          {item.subItems.map((subItem, subIndex) => (
-                             <SidebarMenuItem key={subIndex}>
-                                <Link href={subItem.href} passHref>
-                                  <SidebarMenuButton variant="ghost" size="sm" isActive={isActive(subItem.href) && pathname === subItem.href}>
-                                    {subItem.icon} 
-                                    <span>{subItem.label}</span>
-                                  </SidebarMenuButton>
-                                </Link>
-                            </SidebarMenuItem>
-                          ))}
-                        </SidebarMenu>
-                    </CollapsibleContent>
-                  </Collapsible>
-              )
+                <Collapsible key={`${item.label}-${i}`} defaultOpen={isSubActive(item.paths)}>
+                  <CollapsibleTrigger asChild className="w-full">
+                      <SidebarMenuButton isActive={isSubActive(item.paths)} className="w-full">
+                          {item.icon}
+                          <span>{item.label}</span>
+                          <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                      </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                      <SidebarMenu className="pl-6 py-1">
+                        {item.subItems.map((sub, j) => (
+                           <SidebarMenuItem key={`${sub.href}-${j}`}>
+                              <Link href={sub.href} passHref>
+                                <SidebarMenuButton variant="ghost" size="sm" isActive={pathname === sub.href}>
+                                  {sub.icon} 
+                                  <span>{sub.label}</span>
+                                </SidebarMenuButton>
+                              </Link>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenu>
+                  </CollapsibleContent>
+                </Collapsible>
+              );
             }
+            return null;
           })}
         </SidebarMenu>
       </SidebarContent>

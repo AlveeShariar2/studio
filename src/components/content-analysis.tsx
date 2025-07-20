@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
+import { useToast } from "@/hooks/use-toast"
 
 export function ContentAnalysis() {
   const [text, setText] = useState("")
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<AnalyzeTextContentOutput | null>(null)
+  const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +27,11 @@ export function ContentAnalysis() {
       setResult(analysisResult)
     } catch (error) {
       console.error("Analysis failed:", error)
-      // You can add a toast notification here for the user
+      toast({
+        title: "Analysis Failed",
+        description: "An error occurred while analyzing the text. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -71,28 +77,36 @@ export function ContentAnalysis() {
                   <span className="font-medium">Status:</span>
                   <Badge variant="destructive">Risk Detected</Badge>
                 </div>
-                 <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <span className="font-medium">Severity:</span>
-                  <Badge variant="secondary" className="capitalize">{result.riskAssessment.severity}</Badge>
+                  <Badge variant="secondary" className="capitalize">
+                    {result.riskAssessment.severity}
+                  </Badge>
                 </div>
                 <div>
                   <p className="font-medium">Risk Types:</p>
                   <div className="flex flex-wrap gap-2 mt-1">
                     {result.riskAssessment.riskTypes.map((risk, i) => (
-                      <Badge key={i} variant="outline">{risk}</Badge>
+                      <Badge key={i} variant="outline">
+                        {risk}
+                      </Badge>
                     ))}
                   </div>
                 </div>
                 <div>
                   <p className="font-medium">Explanation:</p>
-                  <p className="text-sm text-muted-foreground mt-1">{result.riskAssessment.explanation}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {result.riskAssessment.explanation}
+                  </p>
                 </div>
               </div>
             ) : (
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Status:</span>
-                  <Badge className="bg-accent text-accent-foreground hover:bg-accent/80">No Risks Found</Badge>
-                </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">Status:</span>
+                <Badge className="bg-accent text-accent-foreground hover:bg-accent/80">
+                  No Risks Found
+                </Badge>
+              </div>
             )}
           </div>
         )}

@@ -9,7 +9,13 @@ type StatsCardProps = {
   variant?: "default" | "destructive"
 }
 
-export function StatsCard({ title, value, description, icon, variant = "default" }: StatsCardProps) {
+export function StatsCard({
+  title,
+  value,
+  description,
+  icon,
+  variant = "default",
+}: StatsCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -17,7 +23,9 @@ export function StatsCard({ title, value, description, icon, variant = "default"
         {icon}
       </CardHeader>
       <CardContent>
-        <div className={cn("text-2xl font-bold", variant === 'destructive' && 'text-destructive')}>{value}</div>
+        <div className={cn("text-2xl font-bold", variant === "destructive" && "text-destructive")}>
+          {value}
+        </div>
         <p className="text-xs text-muted-foreground">{description}</p>
       </CardContent>
     </Card>
