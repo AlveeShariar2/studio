@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,7 +17,7 @@ const geoFences = [
     { name: "Home", status: "active" },
     { name: "School", status: "active" },
     { name: "Danger Zone", status: "active" },
-]
+];
 
 export default function LocationPage() {
     return (
@@ -30,12 +31,11 @@ export default function LocationPage() {
                             <CardDescription>Real-time map view of the device's location.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                             <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                             <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative">
                                 <Image
                                     src="https://placehold.co/1280x720.png"
                                     alt="Map placeholder"
-                                    width={1280}
-                                    height={720}
+                                    fill
                                     className="rounded-md object-cover"
                                     data-ai-hint="world map"
                                 />
@@ -61,8 +61,8 @@ export default function LocationPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {geoFences.map((fence) => (
-                                        <TableRow key={fence.name}>
+                                    {geoFences.map((fence, index) => (
+                                        <TableRow key={`${fence.name}-${index}`}>
                                             <TableCell className="font-medium">{fence.name}</TableCell>
                                             <TableCell><Badge variant="default" className="bg-accent text-accent-foreground">{fence.status}</Badge></TableCell>
                                         </TableRow>
@@ -88,8 +88,8 @@ export default function LocationPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {recentLocations.map((location) => (
-                                <TableRow key={location.name}>
+                            {recentLocations.map((location, index) => (
+                                <TableRow key={`${location.name}-${index}`}>
                                     <TableCell className="font-medium">{location.name}</TableCell>
                                     <TableCell>{location.time}</TableCell>
                                     <TableCell>{location.coordinates}</TableCell>
@@ -100,5 +100,5 @@ export default function LocationPage() {
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }
