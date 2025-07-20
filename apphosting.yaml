@@ -1,6 +1,18 @@
+
+# Settings to manage and configure a Firebase App Hosting backend.
+# https://firebase.google.com/docs/app-hosting/configure
+
 runConfig:
   maxInstances: 1
-  concurrency: 80
 
+# The region to deploy your backend to.
+# The following regions are available:
+# - us-central1
+# - us-west1
+# - us-east1
+# - europe-west1
+# - asia-east1
 region: us-central1
+
+# The runtime to use.
 runtime: nodejs20
