@@ -1,10 +1,10 @@
-
 import { BatteryFull, MapPin, Wifi, Smartphone } from "lucide-react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FeaturesCarousel } from "@/components/features-carousel";
 
 const topCalls = [
   { name: "John Doe", number: "(555) 123-4567", type: "Outgoing", duration: "5m 21s", date: "2024-07-29 10:15" },
@@ -38,6 +38,8 @@ export default function DashboardPage() {
             <span>Expires: 2025-07-29</span>
           </div>
         </div>
+      
+      <FeaturesCarousel />
 
       <Card>
         <CardHeader>

@@ -31,7 +31,7 @@ export default function LoginPage() {
     } catch (error: any) {
       toast({
         title: 'Login Failed',
-        description: error.message,
+        description: error.message || "An unknown error occurred.",
         variant: 'destructive',
       });
     } finally {

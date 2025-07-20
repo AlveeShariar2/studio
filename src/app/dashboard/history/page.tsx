@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from 'react';
@@ -24,7 +23,6 @@ export default function HistoryPage() {
       if (data && data.webHistory) {
         setWebHistory(data.webHistory);
       } else {
-        // Set to empty array if no history found
         setWebHistory([]);
       }
     });
