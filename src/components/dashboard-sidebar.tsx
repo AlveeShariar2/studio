@@ -1,3 +1,4 @@
+
 'use client'
 
 import Link from "next/link"
@@ -61,6 +62,7 @@ export function DashboardSidebar({ search }: { search?: string }) {
   const pathname = usePathname()
 
   const isActive = (path: string) => {
+    // Exact match for dashboard, startsWith for others.
     if (path === '/dashboard') {
       return pathname === path;
     }
