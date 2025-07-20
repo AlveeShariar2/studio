@@ -17,7 +17,7 @@ const geoFences = [
     { name: "Home", status: "active" },
     { name: "School", status: "active" },
     { name: "Danger Zone", status: "active" },
-];
+]
 
 export default function LocationPage() {
     return (
@@ -100,5 +100,5 @@ export default function LocationPage() {
                 </CardContent>
             </Card>
         </div>
-    );
+    )
 }

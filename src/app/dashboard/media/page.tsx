@@ -8,7 +8,7 @@ const mediaItems = Array.from({ length: 12 }, (_, i) => ({
   src: `https://placehold.co/400x400.png?id=${i}`,
   alt: `Media item ${i + 1}`,
   timestamp: `${i + 2} hours ago`,
-  aiHint: 'children playing',
+  aiHint: 'children playing'
 }));
 
 export default function MediaPage() {
@@ -37,13 +37,10 @@ export default function MediaPage() {
                     <p className="text-xs">{item.timestamp}</p>
                   </div>
                 </div>
-                {item.type === 'video' && (
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/80 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <polygon points="10 8 16 12 10 16 10 8" />
-                    </svg>
-                  </div>
+                 {item.type === 'video' && (
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/80 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+                    </div>
                 )}
               </div>
             ))}
@@ -51,5 +48,5 @@ export default function MediaPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
