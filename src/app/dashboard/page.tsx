@@ -1,9 +1,5 @@
 "use client";
 
-import { useObjectVal } from "react-firebase-hooks/database";
-import { ref } from "firebase/database";
-import { db } from "@/lib/firebase";
-
 import { BatteryFull, MapPin, Wifi, Smartphone, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -24,8 +20,7 @@ const topMessages = [
 ]
 
 export default function DashboardPage() {
-  const [childData, loading, error] = useObjectVal(ref(db, 'childData/'));
-
+  
   return (
     <div className="py-6 space-y-6">
        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -38,18 +33,36 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader>
-            <CardTitle>Child Device Data (Live)</CardTitle>
-            <CardDescription>This data is coming live from Firebase Realtime Database.</CardDescription>
+            <CardTitle>Device Information</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm">
-            <div className="p-4 bg-muted rounded-lg overflow-auto min-h-[100px] flex items-center justify-center">
-              {loading && <Loader2 className="h-6 w-6 animate-spin text-primary" />}
-              {error && <p className="text-destructive">Error: {error.message}</p>}
-              {!loading && !error && (
-                <pre>
-                  {childData ? JSON.stringify(childData, null, 2) : "No data available."}
-                </pre>
-              )}
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="flex items-center gap-2">
+                <BatteryFull className="h-5 w-5 text-primary" />
+                <div>
+                    <p className="font-semibold">Battery</p>
+                    <p className="text-muted-foreground">95%</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                <div>
+                    <p className="font-semibold">GPS Status</p>
+                    <p className="text-muted-foreground">On</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2">
+                <Wifi className="h-5 w-5 text-primary" />
+                <div>
+                    <p className="font-semibold">Wi-Fi</p>
+                    <p className="text-muted-foreground">Home_Network_5G</p>
+                </div>
+            </div>
+             <div className="flex items-center gap-2">
+                <Smartphone className="h-5 w-5 text-primary" />
+                <div>
+                    <p className="font-semibold">Device Status</p>
+                    <p className="text-muted-foreground">Online</p>
+                </div>
             </div>
         </CardContent>
       </Card>
