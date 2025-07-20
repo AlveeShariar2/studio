@@ -1,11 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { Bell, Camera, Crop, Download, LogOut, PanelTopOpen, Search } from "lucide-react"
-import { useRouter } from 'next/navigation'
+import { Bell, Camera, Crop, Download, PanelTopOpen, Search } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { signOut } from "firebase/auth"
 import { auth } from "@/lib/firebase"
-
+import { useToast } from "@/hooks/use-toast"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -26,7 +26,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { useToast } from "@/hooks/use-toast"
 
 export default function DashboardLayout({
   children,
@@ -39,14 +38,18 @@ export default function DashboardLayout({
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      toast({ title: "Logged out successfully." });
-      router.push('/');
+      await signOut(auth)
+      toast({ title: "Logged out successfully." })
+      router.push('/')
     } catch (error) {
-      toast({ title: "Logout failed", description: "An error occurred while logging out.", variant: "destructive" });
+      console.error("Logout failed:", error)
+      toast({
+        title: "Logout Failed",
+        description: "An error occurred while logging out.",
+        variant: "destructive",
+      })
     }
-  };
-
+  }
 
   return (
     <SidebarProvider>
@@ -79,7 +82,7 @@ export default function DashboardLayout({
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://placehold.co/100x100.png" alt="@admin" />
+                    <AvatarImage src="https://placehold.co/100x100.png" alt="@admin" data-ai-hint="person user" />
                     <AvatarFallback>AD</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Toggle user menu</span>
@@ -91,10 +94,7 @@ export default function DashboardLayout({
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
