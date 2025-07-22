@@ -1,7 +1,7 @@
 
 # Technical Blueprint: SurokkhaNet Child-Side Application
 
-This document provides a comprehensive technical blueprint for developing the SurokkhaNet child-side mobile application. This application is designed to work in conjunction with the SurokkhaNet admin dashboard, using Firebase as the backend for data synchronization and command handling.
+This document provides a comprehensive technical blueprint for developing the SurokkhaNet child-side mobile application. This application is designed to work in conjunction with the SurokkhaNet admin dashboard, using Firebase as the backend for data synchronization and command handling. This guide is intended to be self-sufficient for any AI or developer to build the corresponding child app.
 
 ---
 
@@ -43,7 +43,7 @@ The entire system's functionality depends on a well-structured Firebase Realtime
         "lastSeen": "timestamp"
       },
       "settings": {
-        "isStealthMode": false,
+        "isStealthMode": true,
         "blockedKeywords": {
           "casino": true,
           "violence": true
@@ -93,24 +93,29 @@ The entire system's functionality depends on a well-structured Firebase Realtime
 
 ### 4.1. First-Time Setup & Device Linking
 
-**Objective:** Securely link the child's device to the parent's dashboard.
+**Objective:** Securely link the child's device to the parent's dashboard and automatically hide the app upon successful connection.
 
 **Steps:**
-1.  **Initiation (Admin Dashboard):** The parent clicks "Add New Device" on the dashboard, which displays a unique, short-lived **Connection Code** (e.g., `A4B-9K2-C7D`). This code is temporarily stored in Firebase under a path like `/pending_connections/{connection_code}`.
-2.  **User Input (Child App):** The child app, on its first launch, will prompt the user to enter this Connection Code.
+1.  **Initiation (Admin Dashboard):** The parent clicks "Add New Device" on the dashboard. The dashboard displays a unique, short-lived **Connection Code** (e.g., `A4B-9K2-C7D`). This code is temporarily stored in Firebase under a path like `/pending_connections/{connection_code}`.
+
+2.  **User Input (Child App):** The child app, on its first launch, will present a simple UI prompting the user to enter this Connection Code.
+
 3.  **Verification & Linking (Child App):**
     *   The child app verifies the entered code against the `/pending_connections` path in Firebase.
     *   Upon successful verification, the child app generates a `UNIQUE_DEVICE_ID` (e.g., using `UUID`).
     *   It then creates the main device node at `devices/{UNIQUE_DEVICE_ID}`, populating it with initial device info (`deviceName`, `model`).
-    *   Finally, it removes the code from `/pending_connections`.
-4.  **Confirmation (Admin Dashboard):** The dashboard, listening for changes under `/devices`, will detect the new device and add it to the list, completing the linking process.
+    *   **Crucially, it sets the initial `isStealthMode` value to `true` at `devices/{UNIQUE_DEVICE_ID}/settings/isStealthMode`.**
+    *   After setting the initial data, the app immediately executes the local "Stealth Mode" function (detailed in section 4.3.a) to hide its own icon.
+    *   Finally, it removes the used code from `/pending_connections`.
+
+4.  **Confirmation (Admin Dashboard):** The dashboard, listening for changes under `/devices`, will detect the new device and add it to the list, completing the seamless and discreet linking process.
 
 ### 4.2. Persistent Background Service
 
 **Objective:** The app must run continuously in the background to collect data and listen for commands, even if the app is closed or the phone restarts.
 
 **Implementation (Android):**
-*   Use a `ForegroundService`. This displays a persistent notification, making it less likely for the OS to kill the service.
+*   Use a `ForegroundService`. This displays a persistent (but discreet) notification, making it less likely for the OS to kill the service.
 *   Use a `BroadcastReceiver` to listen for the `BOOT_COMPLETED` action to restart the service after the device reboots.
 *   **Required Permissions:** `FOREGROUND_SERVICE`, `RECEIVE_BOOT_COMPLETED`.
 
@@ -120,7 +125,7 @@ The entire system's functionality depends on a well-structured Firebase Realtime
 *   **Objective:** Hide the app icon from the device's app launcher.
 *   **Listener Path:** `devices/{id}/settings/isStealthMode`
 *   **Implementation:** When the value is `true`, use `PackageManager.setComponentEnabledSetting` to disable the main launcher activity. When `false`, re-enable it.
-    ```java
+    ```kotlin
     // Kotlin Example
     val componentName = ComponentName(context, MainActivity::class.java)
     val mode = if (isStealthMode) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
@@ -142,17 +147,15 @@ The entire system's functionality depends on a well-structured Firebase Realtime
 *   New entries are pushed to `devices/{id}/logs/calls` and `devices/{id}/logs/messages`.
 *   **Required Permissions:** `READ_CALL_LOG`, `READ_SMS`.
 
-#### d) Remote Screenshot
+#### d) Remote Screenshot & Screen Recording
 *   **Objective:** Capture the screen when commanded by the dashboard.
 *   **Listener Path:** `devices/{id}/commands/takeScreenshot`.
 *   **Implementation:**
-    1.  When the `status` changes to `"pending"`, use the `MediaProjection` API to capture the screen. **Note:** This requires one-time user consent on the child's device.
-    2.  Upload the captured image to **Firebase Storage**.
-    3.  Write the file's metadata (name, storage URL) to `devices/{id}/files/screenshots`.
+    1.  When the command `status` changes to `"pending"`, use the `MediaProjection` API to capture the screen or start recording. **Note:** This requires a one-time user consent on the child's device for security reasons.
+    2.  Upload the captured image/video to **Firebase Storage**.
+    3.  Write the file's metadata (name, storage URL) to the appropriate path under `devices/{id}/files/`.
     4.  Update the command status at `devices/{id}/commands/takeScreenshot/status` to `"completed"`.
 *   **Required Permissions:** `FOREGROUND_SERVICE`.
 
 ---
 This blueprint provides a solid foundation for building a robust and fully functional child-side application that integrates seamlessly with the SurokkhaNet admin dashboard.
-
-    
