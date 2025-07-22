@@ -29,7 +29,7 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AddDeviceDialog } from "@/components/add-device-dialog"
 import withAuth from "@/components/auth/withAuth"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/use-auth.tsx"
 import { Skeleton } from "@/components/ui/skeleton"
 
 function DashboardLayout({

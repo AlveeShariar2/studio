@@ -200,13 +200,12 @@ export function DashboardSidebar({ search, onAddDeviceClick, user }: DashboardSi
                 <Smartphone className="h-4 w-4 mr-2" />
                 <span>Aria's Tablet</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={onAddDeviceClick}>
-                <PlusCircle className="h-4 w-4 mr-2" />
-                <span>Add New Device</span>
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+           <Button variant="default" className="w-full mt-2" onClick={onAddDeviceClick}>
+             <PlusCircle className="mr-2 h-4 w-4" />
+             Add New Device
+           </Button>
         </SidebarGroup>
 
         <SidebarMenu>
