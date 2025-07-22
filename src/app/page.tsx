@@ -1,20 +1,20 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, isFirebaseConfigured } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/icons/logo';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth.tsx';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,11 +32,18 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isFirebaseConfigured) {
+        toast({
+            title: 'Configuration Error',
+            description: "Firebase is not configured. Please check your .env file.",
+            variant: 'destructive',
+        });
+        return;
+    }
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: 'Login Successful', description: "Redirecting to dashboard..." });
-      // The useEffect hook will handle redirection
     } catch (error: any) {
       toast({
         title: 'Login Failed',
@@ -63,6 +70,8 @@ export default function LoginPage() {
     )
   }
 
+  const isFormDisabled = loading || !isFirebaseConfigured;
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm mx-auto">
@@ -76,6 +85,15 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {!isFirebaseConfigured && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Configuration Error</AlertTitle>
+              <AlertDescription>
+                Firebase is not configured. Please add your credentials to the .env file.
+              </AlertDescription>
+            </Alert>
+          )}
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -86,7 +104,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={loading}
+                disabled={isFormDisabled}
               />
             </div>
             <div className="space-y-2">
@@ -102,10 +120,10 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={loading}
+                disabled={isFormDisabled}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={isFormDisabled}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
