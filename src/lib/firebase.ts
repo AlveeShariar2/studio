@@ -1,3 +1,4 @@
+
 import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getDatabase, type Database } from "firebase/database";
@@ -12,26 +13,38 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Check if all required environment variables are set
-const isFirebaseConfigured =
-  firebaseConfig.apiKey &&
-  firebaseConfig.authDomain &&
-  firebaseConfig.databaseURL &&
-  firebaseConfig.projectId &&
-  firebaseConfig.storageBucket &&
-  firebaseConfig.messagingSenderId &&
-  firebaseConfig.appId;
+export const isFirebaseConfigured = !!firebaseConfig.apiKey;
 
 let app: FirebaseApp;
 let auth: Auth;
 let db: Database;
 
-if (isFirebaseConfigured) {
-    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-    auth = getAuth(app);
-    db = getDatabase(app);
-} else {
-    console.warn("Firebase is not configured. Please add your credentials to the .env file.");
+function getFirebaseApp() {
+    if (!isFirebaseConfigured) {
+        throw new Error("Firebase is not configured. Please add your credentials to the .env file.");
+    }
+    if (getApps().length === 0) {
+        app = initializeApp(firebaseConfig);
+    } else {
+        app = getApp();
+    }
+    return app;
 }
 
-export { app, auth, db, isFirebaseConfigured };
+function getFirebaseAuth() {
+    if (!auth) {
+        auth = getAuth(getFirebaseApp());
+    }
+    return auth;
+}
+
+function getFirebaseDatabase() {
+    if (!db) {
+        db = getDatabase(getFirebaseApp());
+    }
+    return db;
+}
+
+
+// Export instances through getters to ensure they are initialized only when needed on the client-side.
+export { getFirebaseAuth, getFirebaseDatabase };

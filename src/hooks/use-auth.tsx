@@ -1,8 +1,9 @@
+
 "use client"
 
 import { useState, useEffect, useContext, createContext, ReactNode } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { getFirebaseAuth } from '@/lib/firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -16,12 +17,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    try {
+      const auth = getFirebaseAuth();
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        setUser(user);
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    } catch (error) {
+        // This can happen if Firebase is not configured.
+        // The UI will show the configuration error message.
+        console.error("Auth Error:", error);
+        setLoading(false);
+    }
   }, []);
 
   return (

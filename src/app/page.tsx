@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from '@/lib/firebase';
+import { getFirebaseAuth, isFirebaseConfigured } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
@@ -42,6 +43,7 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
+      const auth = getFirebaseAuth();
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: 'Login Successful', description: "Redirecting to dashboard..." });
     } catch (error: any) {

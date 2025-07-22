@@ -5,7 +5,7 @@ import * as React from "react"
 import { Bell, Camera, Crop, Download, PanelTopOpen, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { signOut } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { getFirebaseAuth } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 
 import { Button } from "@/components/ui/button"
@@ -45,6 +45,7 @@ function DashboardLayout({
 
   const handleLogout = async () => {
     try {
+      const auth = getFirebaseAuth();
       await signOut(auth)
       toast({ title: "Logged out successfully." })
       router.push('/')
