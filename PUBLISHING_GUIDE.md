@@ -1,54 +1,33 @@
 
-# কীভাবে অ্যাপ্লিকেশন পাবলিশ করবেন এবং সন্তানের অ্যাপের সাথে সংযোগ করবেন
+# Technical Blueprint: SurokkhaNet Child-Side Application
 
-এই গাইডটি আপনাকে আপনার অ্যাডমিন ড্যাশবোর্ড পাবলিশ করতে এবং এটিকে সন্তানের ফোনে থাকা অ্যাপের সাথে কীভাবে সংযোগ করবেন তার একটি পরিষ্কার ধারণা দেবে।
-
-## সিস্টেমটি কীভাবে কাজ করে?
-
-আপনার সম্পূর্ণ সিস্টেমটির দুটি প্রধান অংশ রয়েছে:
-
-1.  **অ্যাডমিন ড্যাশবোর্ড (এই অ্যাপ্লিকেশনটি):** এটি হলো কন্ট্রোল প্যানেল, যা আপনি এখন দেখছেন। এখান থেকে আপনি নির্দেশ (command) পাঠাতে পারবেন এবং সন্তানের ফোন থেকে পাঠানো তথ্য দেখতে পারবেন। এটি একটি ওয়েব অ্যাপ্লিকেশন, যা যেকোনো ব্রাউজার থেকে চালানো যায়।
-
-2.  **চাইল্ড-সাইড অ্যাপ (আলাদাভাবে তৈরি করতে হবে):** এটি একটি মোবাইল অ্যাপ্লিকেশন (Android/iOS), যা আপনাকে সন্তানের ফোনে ইনস্টল করতে হবে। এই অ্যাপটি ছাড়া আপনার ড্যাশবোর্ডের কোনো ফিচার (যেমন: ফাইল দেখা, অ্যাপ ব্লক করা) কাজ করবে না।
-
-এই দুটি অ্যাপ্লিকেশন **Firebase Realtime Database** ব্যবহার করে একে অপরের সাথে যোগাযোগ করে। সহজ কথায়, Firebase আপনার এবং আপনার সন্তানের ডিভাইসের মধ্যে একটি সেতু হিসাবে কাজ করে।
+This document provides a comprehensive technical blueprint for developing the SurokkhaNet child-side mobile application. This application is designed to work in conjunction with the SurokkhaNet admin dashboard, using Firebase as the backend for data synchronization and command handling.
 
 ---
 
-## ১. অ্যাডমিন ড্যাশবোর্ড পাবলিশ করা
+## 1. System Architecture Overview
 
-এই অ্যাপ্লিকেশনটি একটি Next.js ওয়েব অ্যাপ। এটিকে পাবলিশ করার সবচেয়ে সহজ উপায় হলো **Firebase App Hosting** ব্যবহার করা।
+The system consists of two main components:
+1.  **Admin Dashboard (Web Application):** A Next.js application that serves as a control panel for parents to monitor activity and send commands. (This is the application you currently have).
+2.  **Child-Side App (Mobile Application):** A mobile application (to be built) that runs on the child's device. It collects data, uploads it to Firebase, and listens for commands from the dashboard.
 
-### ধাপসমূহ:
-
-1.  **Firebase CLI ইনস্টল করুন:** যদি আপনার কম্পিউটারে Firebase Command Line Interface (CLI) ইনস্টল করা না থাকে, তবে এটি ইনস্টল করুন। টার্মিনালে এই কমান্ডটি চালান:
-    `npm install -g firebase-tools`
-
-2.  **Firebase-এ লগইন করুন:** আপনার গুগল অ্যাকাউন্ট দিয়ে Firebase-এ লগইন করুন।
-    `firebase login`
-
-3.  **প্রজেক্ট শুরু করুন:** আপনার প্রজেক্ট ফোল্ডারের টার্মিনাল থেকে, আপনার Firebase প্রজেক্টের সাথে এই ফোল্ডারটিকে সংযুক্ত করুন।
-    `firebase init apphosting`
-    CLI আপনাকে কিছু প্রশ্ন করবে। আপনার বিদ্যমান Firebase প্রজেক্টটি বেছে নিন এবং ডিফল্ট অপশনগুলো অনুসরণ করুন।
-
-4.  **অ্যাপ ডিপ্লয় করুন:** চূড়ান্ত ধাপ হলো আপনার অ্যাপ্লিকেশনটি Firebase-এ আপলোড বা ডিপ্লয় করা।
-    `firebase apphosting:backends:deploy`
-
-ডিপ্লয় সম্পূর্ণ হলে, আপনি একটি URL পাবেন যেখানে আপনার অ্যাডমিন ড্যাশবোর্ড লাইভ দেখতে পারবেন।
+**Communication Hub:** **Firebase Realtime Database** and **Firebase Storage** act as the central bridge between the dashboard and the child-side app.
 
 ---
 
-## ২. চাইল্ড-সাইড অ্যাপ তৈরির গাইডলাইন
+## 2. Recommended Technology Stack (for Child App)
 
-এই ড্যাশবোর্ডটি সম্পূর্ণভাবে কাজ করার জন্য, আপনাকে সন্তানের ফোনের জন্য একটি মোবাইল অ্যাপ তৈরি করতে হবে। নিচে এই অ্যাপটি তৈরির জন্য একটি বিস্তারিত ব্লুপ্রিন্ট দেওয়া হলো।
+For efficient development, a cross-platform framework is recommended.
+*   **Primary Recommendation:** **Flutter** or **React Native**. These frameworks allow for a single codebase for both Android and iOS.
+*   **Alternative:** Native development using **Kotlin** for Android and **Swift** for iOS.
 
-### ক. প্রযুক্তি নির্বাচন
+---
 
-আপনি Android (Java/Kotlin) বা iOS (Swift) এর জন্য নেটিভ অ্যাপ তৈরি করতে পারেন, অথবা React Native বা Flutter-এর মতো ক্রস-প্ল্যাটফর্ম ফ্রেমওয়ার্ক ব্যবহার করতে পারেন, যা দিয়ে ஒரே কোডবেস থেকে দুটি প্ল্যাটফর্মের জন্যই অ্যাপ তৈরি করা সম্ভব। **Visual Studio Code** এই সবগুলোর জন্যই চমৎকার সাপোর্ট দেয়।
+## 3. Firebase Database Schema
 
-### খ. Firebase ডেটাবেস গঠন
+The entire system's functionality depends on a well-structured Firebase Realtime Database. The following schema must be implemented precisely.
 
-অ্যাপের কার্যকারিতা Firebase Realtime Database-এর সঠিক গঠনের উপর নির্ভর করবে। নিচে একটি প্রস্তাবিত ডেটাবেস স্ট্রাকচার দেওয়া হলো:
+**Root Path:** `/devices`
 
 ```json
 {
@@ -65,19 +44,22 @@
       },
       "settings": {
         "isStealthMode": false,
-        "isRemoteControlEnabled": true,
-        "isCallRecordingEnabled": true,
-        "blockedKeywords": ["casino", "violence"],
-        "blockedApps": ["com.instagram.android"]
+        "blockedKeywords": {
+          "casino": true,
+          "violence": true
+        },
+        "blockedApps": {
+          "com.instagram.android": true
+        }
       },
       "commands": {
-        "takeScreenshot": "pending",
-        "recordSurround": "pending",
-        "exportData": "pending"
+        "takeScreenshot": { "status": "pending", "timestamp": 1678886400 },
+        "recordSurround": { "status": "idle", "duration": 300 },
+        "exportData": { "status": "idle" }
       },
       "logs": {
         "calls": {
-          "log_id_1": { "type": "Outgoing", "number": "(555) 123-4567", "duration": "321", "date": "timestamp" }
+          "log_id_1": { "type": "Outgoing", "number": "(555) 123-4567", "duration": 321, "date": "timestamp" }
         },
         "messages": {
           "msg_id_1": { "from": "John Doe", "message": "Hey...", "date": "timestamp" }
@@ -93,11 +75,11 @@
         }
       },
       "files": {
-        "photos": {
+        "screenshots": {
           "file_id_1": { "name": "IMG_2024.jpg", "url": "firebase_storage_url", "timestamp": "timestamp" }
         },
-        "videos": {
-          "file_id_2": { "name": "VID_2024.mp4", "url": "firebase_storage_url", "timestamp": "timestamp" }
+        "recordings": {
+          "file_id_2": { "name": "REC_2024.mp3", "url": "firebase_storage_url", "timestamp": "timestamp" }
         }
       }
     }
@@ -105,34 +87,72 @@
 }
 ```
 
-### গ. চাইল্ড অ্যাপের মূল কার্যকারিতা
+---
 
-1.  **প্রথমবার সেটআপ ও সংযোগ:**
-    *   **ধাপ ১:** চাইল্ড অ্যাপটি প্রথমবার চালু হলে, এটি ব্যবহারকারীর (অভিভাবকের) কাছ থেকে একটি **কানেকশন কোড** চাইবে (যেমন: `A4B-9K2-C7D`)। এই কোডটি অ্যাডমিন ড্যাশবোর্ডের "Add New Device" অপশন থেকে পাওয়া যাবে।
-    *   **ধাপ ২:** কোডটি প্রবেশ করানোর পর, অ্যাপটি Firebase-এ একটি নতুন `UNIQUE_DEVICE_ID` তৈরি করবে এবং `devices/{UNIQUE_DEVICE_ID}` পাথে ডিফল্ট তথ্য (যেমন: ডিভাইসের নাম, মডেল) দিয়ে শুরু করবে। এই `UNIQUE_DEVICE_ID`-টিই হবে এই ডিভাইসের পরিচায়ক।
-    *   **ধাপ ৩:** সংযোগ সফল হলে, অ্যাডমিন ড্যাশবোর্ড স্বয়ংক্রিয়ভাবে নতুন ডিভাইসটিকে তার তালিকায় যুক্ত করে নেবে।
+## 4. Core Functionality and Implementation Guide
 
-2.  **ব্যাকগ্রাউন্ড সার্ভিস:**
-    *   অ্যাপটিতে একটি অবিচ্ছিন্ন ব্যাকগ্রাউন্ড সার্ভিস চালু রাখতে হবে, যা ফোন রিস্টার্ট হলেও নিজে থেকে চালু হয়ে যাবে। এই সার্ভিসটি দুটি প্রধান কাজ করবে:
-        *   **নির্দেশ শোনা (Listen for Commands):** `devices/{id}/settings` এবং `devices/{id}/commands` পাথে রিয়েল-টাইমে পরিবর্তন শোনার জন্য লিসেনার সেট করতে হবে।
-        *   **ডেটা আপলোড করা (Upload Data):** নির্দিষ্ট সময় পর পর (যেমন প্রতি ১৫ মিনিটে) ফোনের বিভিন্ন লগ (কল, মেসেজ, লোকেশন) সংগ্রহ করে Firebase-এ আপলোড করবে।
+### 4.1. First-Time Setup & Device Linking
 
-### ঘ. ফিচার অনুযায়ী বাস্তবায়ন (Android উদাহরণ)
+**Objective:** Securely link the child's device to the parent's dashboard.
 
-*   **Stealth Mode:**
-    *   **উদ্দেশ্য:** অ্যাপের আইকন হাইড করা।
-    *   **পদ্ধতি:** Firebase-এর `settings/isStealthMode` ফিল্ডটি শুনবে। যদি `true` হয়, তবে অ্যাপটি `PackageManager.setComponentEnabledSetting` ব্যবহার করে নিজের আইকন হাইড করবে।
+**Steps:**
+1.  **Initiation (Admin Dashboard):** The parent clicks "Add New Device" on the dashboard, which displays a unique, short-lived **Connection Code** (e.g., `A4B-9K2-C7D`). This code is temporarily stored in Firebase under a path like `/pending_connections/{connection_code}`.
+2.  **User Input (Child App):** The child app, on its first launch, will prompt the user to enter this Connection Code.
+3.  **Verification & Linking (Child App):**
+    *   The child app verifies the entered code against the `/pending_connections` path in Firebase.
+    *   Upon successful verification, the child app generates a `UNIQUE_DEVICE_ID` (e.g., using `UUID`).
+    *   It then creates the main device node at `devices/{UNIQUE_DEVICE_ID}`, populating it with initial device info (`deviceName`, `model`).
+    *   Finally, it removes the code from `/pending_connections`.
+4.  **Confirmation (Admin Dashboard):** The dashboard, listening for changes under `/devices`, will detect the new device and add it to the list, completing the linking process.
 
-*   **Content Filtering ও App Blocking:**
-    *   **উদ্দেশ্য:** ব্লক করা ওয়েবসাইট বা অ্যাপের ব্যবহার বন্ধ করা।
-    *   **পদ্ধতি:** এর জন্য Android-এর `AccessibilityService` ব্যবহার করতে হবে। এই সার্ভিসটি পর্যবেক্ষণ করবে ব্যবহারকারী কোন ওয়েবসাইটে যাচ্ছেন বা কোন অ্যাপ ব্যবহার করছেন। যদি ব্লক করা তালিকা থেকে কোনো আইটেম পাওয়া যায়, তবে ব্রাউজার বা অ্যাপটি বন্ধ করে দেওয়া হবে।
+### 4.2. Persistent Background Service
 
-*   **Call & Message Logs:**
-    *   **উদ্দেশ্য:** কল ও মেসেজের তথ্য সংগ্রহ করা।
-    *   **পদ্ধতি:** নির্দিষ্ট সময় পর পর ফোনের `CallLog.Calls` এবং `Telephony.Sms` থেকে ডেটা পড়ে `logs/calls` ও `logs/messages` পাথে আপলোড করবে। এর জন্য `READ_CALL_LOG` এবং `READ_SMS` পারমিশন লাগবে।
+**Objective:** The app must run continuously in the background to collect data and listen for commands, even if the app is closed or the phone restarts.
 
-*   **Remote Control (Screenshot & Screen Mirroring):**
-    *   **উদ্দেশ্য:** স্ক্রিনশট নেওয়া বা লাইভ স্ক্রিন দেখা।
-    *   **পদ্ধতি:** এর জন্য Android-এর `MediaProjection` API ব্যবহার করতে হবে। `commands/takeScreenshot`-এর মান `pending` হলে, অ্যাপটি স্ক্রিনশট নেবে। ছবিটি Firebase Storage-এ আপলোড করে তার URL `files/photos`-এ সেভ করবে এবং `commands/takeScreenshot`-এর মান `completed` করে দেবে। Screen Mirroring-এর জন্য, এই API থেকে পাওয়া ভিডিও স্ট্রিমটি একটি WebRTC কানেকশনের মাধ্যমে ড্যাশবোর্ডে লাইভ দেখানো যেতে পারে।
+**Implementation (Android):**
+*   Use a `ForegroundService`. This displays a persistent notification, making it less likely for the OS to kill the service.
+*   Use a `BroadcastReceiver` to listen for the `BOOT_COMPLETED` action to restart the service after the device reboots.
+*   **Required Permissions:** `FOREGROUND_SERVICE`, `RECEIVE_BOOT_COMPLETED`.
 
-এই ব্লুপ্রিন্ট অনুসরণ করে আপনি একটি শক্তিশালী এবং কার্যকরী চাইল্ড অ্যাপ্লিকেশন তৈরি করতে পারবেন, যা আপনার তৈরি করা ড্যাশবোর্ডের সাথে নিখুঁতভাবে কাজ করবে।
+### 4.3. Feature Implementation Details (Android Example)
+
+#### a) Stealth Mode
+*   **Objective:** Hide the app icon from the device's app launcher.
+*   **Listener Path:** `devices/{id}/settings/isStealthMode`
+*   **Implementation:** When the value is `true`, use `PackageManager.setComponentEnabledSetting` to disable the main launcher activity. When `false`, re-enable it.
+    ```java
+    // Kotlin Example
+    val componentName = ComponentName(context, MainActivity::class.java)
+    val mode = if (isStealthMode) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+               else PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+    context.packageManager.setComponentEnabledSetting(componentName, mode, PackageManager.DONT_KILL_APP)
+    ```
+
+#### b) Content Filtering & App Blocking
+*   **Objective:** Block websites with specific keywords and prevent access to blocked apps.
+*   **Listener Paths:** `devices/{id}/settings/blockedKeywords` and `devices/{id}/settings/blockedApps`.
+*   **Implementation:** Use an `AccessibilityService`.
+    *   This service monitors `TYPE_WINDOW_STATE_CHANGED` events to get the current app's package name and `TYPE_VIEW_TEXT_CHANGED` for browser URL changes.
+    *   If the current app's package name is in the `blockedApps` list, or if a URL contains a word from the `blockedKeywords` list, programmatically trigger the "Back" button or navigate to the home screen.
+    *   **Required Permissions:** `BIND_ACCESSIBILITY_SERVICE`.
+
+#### c) Call & Message Logs
+*   **Objective:** Periodically upload call and SMS logs.
+*   **Implementation:** The background service, on a timer (e.g., every 15 minutes), will read from Android's `CallLog.Calls` and `Telephony.Sms` content providers.
+*   New entries are pushed to `devices/{id}/logs/calls` and `devices/{id}/logs/messages`.
+*   **Required Permissions:** `READ_CALL_LOG`, `READ_SMS`.
+
+#### d) Remote Screenshot
+*   **Objective:** Capture the screen when commanded by the dashboard.
+*   **Listener Path:** `devices/{id}/commands/takeScreenshot`.
+*   **Implementation:**
+    1.  When the `status` changes to `"pending"`, use the `MediaProjection` API to capture the screen. **Note:** This requires one-time user consent on the child's device.
+    2.  Upload the captured image to **Firebase Storage**.
+    3.  Write the file's metadata (name, storage URL) to `devices/{id}/files/screenshots`.
+    4.  Update the command status at `devices/{id}/commands/takeScreenshot/status` to `"completed"`.
+*   **Required Permissions:** `FOREGROUND_SERVICE`.
+
+---
+This blueprint provides a solid foundation for building a robust and fully functional child-side application that integrates seamlessly with the SurokkhaNet admin dashboard.
+
+    
