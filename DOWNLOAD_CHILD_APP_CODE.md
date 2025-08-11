@@ -227,8 +227,9 @@ class BackgroundService : Service() {
         createNotificationChannel()
         startForeground(1, createNotification())
         
-        // Start other services
-        // Example: startLocationTracking()
+        // This is where you would start your continuous monitoring tasks,
+        // for example, initializing a location listener or a command listener.
+        // These tasks should be handled by the Flutter side via the NativeBridge.
         
         return START_STICKY
     }
@@ -363,7 +364,7 @@ class AccessibilityService : AccessibilityService() {
 }
 ```
 
-### **7. `lib/services/command_handler.dart` (Updated)**
+### **7. `lib/services/command_handler.dart`**
 
 ```dart
 import 'package:firebase_database/firebase_database.dart';
@@ -429,5 +430,6 @@ class CommandHandler {
 
 ---
 *The rest of the files like `main.dart`, `pubspec.yaml`, etc., remain as previously defined as they are already well-structured for these new features.*
+    
 
     
