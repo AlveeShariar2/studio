@@ -252,13 +252,14 @@ surokkhanet_child/
 │   ├── app/
 │   │   ├── src/main/
 │   │   │   ├── kotlin/
-│   │   │   │   └── com/surokkhanet/child/  <- (Package Name)
-│   │   │   │       ├── AccessibilityService.kt
-│   │   │   │       ├── BackgroundService.kt
-│   │   │   │       ├── DeviceAdminReceiver.kt
-│   │   │   │       ├── ScreenCapture.kt
-│   │   │   │       ├── SecretReceiver.kt
-│   │   │   │       └── NativeBridge.kt
+│   │   │   │   └── com/
+│   │   │   │       └── surokkhanet/
+│   │   │   │           ├── AccessibilityService.kt
+│   │   │   │           ├── BackgroundService.kt
+│   │   │   │           ├── DeviceAdminReceiver.kt
+│   │   │   │           ├── ScreenCapture.kt
+│   │   │   │           ├── SecretReceiver.kt
+│   │   │   │           └── NativeBridge.kt
 │   │   │   ├── res/
 │   │   │   │   ├── xml/
 │   │   │   │   │   ├── accessibility_config.xml
@@ -492,6 +493,3 @@ class CommandHandler {
 ```
 *(... and so on for every other child app file, following the specified structure.)*
 ```
-
----
----
