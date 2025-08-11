@@ -6,7 +6,9 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from '@/components/ui/skeleton';
-import { listenToChildData } from '@/lib/child-data';
+import { listenToChildData, type ChildData } from '@/lib/child-data';
+
+const ACTIVE_DEVICE_ID = "device-1"; // This should be dynamic based on the selected device
 
 interface HistoryItem {
   url: string;
@@ -20,14 +22,17 @@ export default function HistoryPage() {
   const [webHistory, setWebHistory] = React.useState<HistoryItem[] | null>(null);
 
   React.useEffect(() => {
-    const unsubscribe = listenToChildData((data) => {
+    // Start listening to the active device's data
+    const unsubscribe = listenToChildData(ACTIVE_DEVICE_ID, (data: ChildData | null) => {
       if (data && data.webHistory) {
         setWebHistory(data.webHistory);
       } else {
-        setWebHistory([]);
+        // Set to empty array if data is null or webHistory is missing
+        setWebHistory([]); 
       }
     });
 
+    // Clean up the listener when the component unmounts
     return () => unsubscribe();
   }, []);
 
@@ -48,7 +53,7 @@ export default function HistoryPage() {
       <Card>
         <CardHeader>
           <CardTitle>Browsing Activity</CardTitle>
-          <CardDescription>A complete log of visited websites and search engine queries.</CardDescription>
+          <CardDescription>A real-time log of visited websites and search queries from the selected device.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -81,7 +86,9 @@ export default function HistoryPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center">No browsing history found.</TableCell>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    No browsing history found for this device. Listening for new data...
+                  </TableCell>
                 </TableRow>
               )}
             </TableBody>
