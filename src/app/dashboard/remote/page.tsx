@@ -1,20 +1,23 @@
-
 "use client"
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Camera, Mic, ScreenShare, Video, X } from "lucide-react";
+import { Camera, Mic, ScreenShare, Video, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ContentAnalysis } from '@/components/content-analysis';
+import { sendCommandToDevice } from '@/lib/firebase';
+
+const ACTIVE_DEVICE_ID = "device-1"; // This should be dynamic based on selected device
 
 export default function RemotePage() {
     const { toast } = useToast();
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null);
     const [isScreenMirroring, setIsScreenMirroring] = React.useState(false);
+    const [isSendingCommand, setIsSendingCommand] = React.useState(false);
     const toastShownRef = React.useRef(false);
 
     React.useEffect(() => {
@@ -70,22 +73,29 @@ export default function RemotePage() {
         };
     }, [isScreenMirroring, toast]);
     
-    const handleScreenMirrorToggle = () => {
-        const newIsScreenMirroring = !isScreenMirroring;
-        setIsScreenMirroring(newIsScreenMirroring);
-
-        if (newIsScreenMirroring) {
+    const handleCommand = async (commandType: string, params: Record<string, any> = {}) => {
+        setIsSendingCommand(true);
+        try {
+            await sendCommandToDevice(ACTIVE_DEVICE_ID, commandType, params);
             toast({
-                title: 'Screen Mirroring Started',
-                description: 'Live screen sharing has begun.',
+                title: 'Command Sent',
+                description: `The '${commandType}' command was sent to the device.`,
             });
-        } else {
-             toast({
-                title: 'Screen Mirroring Stopped',
-                description: 'Live screen sharing has ended.',
+
+            if (commandType === 'startScreenMirroring' || commandType === 'stopScreenMirroring') {
+                setIsScreenMirroring(commandType === 'startScreenMirroring');
+            }
+        } catch (error) {
+            console.error(`Failed to send command '${commandType}':`, error);
+            toast({
+                variant: 'destructive',
+                title: 'Command Failed',
+                description: `Could not send the '${commandType}' command.`,
             });
+        } finally {
+            setIsSendingCommand(false);
         }
-    }
+    };
     
     return (
         <div className="py-6 space-y-6">
@@ -101,9 +111,7 @@ export default function RemotePage() {
                             <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative">
                                 {isScreenMirroring ? (
                                      <div className="w-full h-full bg-black rounded-lg p-4 flex justify-center items-center">
-                                        <div className="w-full h-full">
-                                            <iframe src="/dashboard" className="w-full h-full rounded-md border-2 border-slate-700" title="Screen Mirror"></iframe>
-                                        </div>
+                                        <p className="text-muted-foreground">Waiting for device screen...</p>
                                     </div>
                                 ) : (
                                     <div className="w-full h-full relative">
@@ -119,7 +127,7 @@ export default function RemotePage() {
                                                 <Alert variant="destructive" className="w-full max-w-sm">
                                                     <AlertTitle>Camera Access Required</AlertTitle>
                                                     <AlertDescription>
-                                                        Please allow camera access in your browser to use this feature. Your browser might not support this feature.
+                                                        Please allow camera access in your browser to use this feature.
                                                     </AlertDescription>
                                                 </Alert>
                                             </div>
@@ -133,8 +141,8 @@ export default function RemotePage() {
                                     <Switch id="camera-switch" defaultChecked/>
                                     <Label htmlFor="camera-switch">Front Camera</Label>
                                    </div>
-                                    <Button disabled={hasCameraPermission !== true}>
-                                        <Camera className="mr-2 h-4 w-4" />
+                                    <Button onClick={() => handleCommand('take_snapshot')} disabled={isSendingCommand || hasCameraPermission !== true}>
+                                        {isSendingCommand ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
                                         Take Snapshot
                                     </Button>
                                 </div>
@@ -149,20 +157,21 @@ export default function RemotePage() {
                             <CardDescription>Control various device functions remotely.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                             <Button 
+                            <Button 
                                 className="w-full justify-start"
-                                onClick={handleScreenMirrorToggle}
+                                onClick={() => handleCommand(isScreenMirroring ? 'stopScreenMirroring' : 'startScreenMirroring')}
                                 variant={isScreenMirroring ? "destructive" : "default"}
+                                disabled={isSendingCommand}
                             >
-                                {isScreenMirroring ? <X className="mr-2 h-4 w-4" /> : <ScreenShare className="mr-2 h-4 w-4" />}
+                                {isSendingCommand ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isScreenMirroring ? <X className="mr-2 h-4 w-4" /> : <ScreenShare className="mr-2 h-4 w-4" />)}
                                 {isScreenMirroring ? "Stop Live Screen Sharing" : "Start Live Screen Sharing"}
                             </Button>
-                            <Button className="w-full justify-start" disabled={isScreenMirroring}>
-                                <Video className="mr-2 h-4 w-4" />
+                            <Button className="w-full justify-start" onClick={() => handleCommand('startScreenRecording')} disabled={isSendingCommand}>
+                                {isSendingCommand ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Video className="mr-2 h-4 w-4" />}
                                 Start Screen Recording
                             </Button>
-                            <Button className="w-full justify-start" disabled={isScreenMirroring}>
-                                <Mic className="mr-2 h-4 w-4" />
+                            <Button className="w-full justify-start" onClick={() => handleCommand('startSurroundRecording')} disabled={isSendingCommand}>
+                                {isSendingCommand ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mic className="mr-2 h-4 w-4" />}
                                 Start Surround Recording
                             </Button>
                         </CardContent>

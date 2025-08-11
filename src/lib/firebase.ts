@@ -1,7 +1,7 @@
-
 import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
-import { getDatabase, type Database } from "firebase/database";
+import { getDatabase, type Database, ref, set, serverTimestamp } from "firebase/database";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -18,6 +18,7 @@ export const isFirebaseConfigured = !!firebaseConfig.apiKey;
 let app: FirebaseApp;
 let auth: Auth;
 let db: Database;
+let storage: FirebaseStorage;
 
 function getFirebaseApp() {
     if (!isFirebaseConfigured) {
@@ -45,6 +46,28 @@ function getFirebaseDatabase() {
     return db;
 }
 
+function getFirebaseStorage() {
+    if (!storage) {
+        storage = getStorage(getFirebaseApp());
+    }
+    return storage;
+}
 
-// Export instances through getters to ensure they are initialized only when needed on the client-side.
-export { getFirebaseAuth, getFirebaseDatabase };
+export async function sendCommandToDevice(deviceId: string, commandType: string, params: Record<string, any> = {}) {
+  if (!isFirebaseConfigured) throw new Error("Firebase not configured.");
+  
+  const db = getFirebaseDatabase();
+  const commandId = `cmd_${Date.now()}`;
+  const commandRef = ref(db, `devices/${deviceId}/commands/${commandId}`);
+  
+  await set(commandRef, {
+    type: commandType,
+    params: params,
+    status: 'pending',
+    createdAt: serverTimestamp(),
+  });
+
+  return commandId;
+}
+
+export { getFirebaseAuth, getFirebaseDatabase, getFirebaseStorage };
