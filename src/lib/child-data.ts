@@ -26,6 +26,11 @@ export interface ChildData {
   messages?: any[];
 }
 
+export interface ScreenData {
+    url: string;
+    timestamp: number;
+}
+
 
 /**
  * Listens for real-time data updates from a specific child device path in Firebase.
@@ -55,3 +60,30 @@ export const listenToChildData = (deviceId: string, callback: (data: ChildData |
     return () => {};
   }
 };
+
+/**
+ * Listens for real-time screen data updates for screen mirroring.
+ * @param deviceId The ID of the child device to listen to.
+ * @param callback The function to execute with the new screen data.
+ * @returns An unsubscribe function to stop listening.
+ */
+export const listenToScreenData = (deviceId: string, callback: (data: ScreenData | null) => void): Unsubscribe => {
+    try {
+        const db = getFirebaseDatabase();
+        const screenDataRef = ref(db, `devices/${deviceId}/screen`);
+
+        const unsubscribe = onValue(screenDataRef, (snapshot) => {
+            const data = snapshot.val();
+            callback(data as ScreenData | null);
+        }, (error) => {
+            console.error("Firebase screen data listening error:", error);
+            callback(null);
+        });
+
+        return unsubscribe;
+
+    } catch (error) {
+        console.error("Failed to initialize Firebase screen listener:", error);
+        return () => {};
+    }
+}
