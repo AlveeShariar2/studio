@@ -22,28 +22,53 @@ export default function RemotePage() {
     const [isSendingCommand, setIsSendingCommand] = React.useState(false);
     const [screenData, setScreenData] = React.useState<ScreenData | null>(null);
     const [isDeviceResponding, setIsDeviceResponding] = React.useState(true);
-    const toastShownRef = React.useRef(false);
     const screenDataTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
     React.useEffect(() => {
         let stream: MediaStream | null = null;
-    
+        
         const getCameraPermission = async () => {
-            // Camera logic remains the same
-        };
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            setHasCameraPermission(true);
     
+            if (videoRef.current) {
+              videoRef.current.srcObject = stream;
+            }
+          } catch (error) {
+            console.error('Error accessing camera:', error);
+            setHasCameraPermission(false);
+            toast({
+              variant: 'destructive',
+              title: 'Camera Access Denied',
+              description: 'Please enable camera permissions in your browser settings to use this app.',
+            });
+          }
+        };
+
         if (!isScreenMirroring) {
             getCameraPermission();
+        } else {
+            // Stop camera stream when mirroring starts
+            if (videoRef.current?.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
+                videoRef.current.srcObject = null;
+            }
         }
     
         return () => {
-            // Cleanup logic remains the same
+            if (videoRef.current?.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
+            }
         };
     }, [isScreenMirroring, toast]);
 
     React.useEffect(() => {
         if (!isScreenMirroring) {
             setScreenData(null);
+            if(screenDataTimeoutRef.current) clearTimeout(screenDataTimeoutRef.current);
             return;
         }
 
@@ -55,9 +80,11 @@ export default function RemotePage() {
                 if (screenDataTimeoutRef.current) {
                     clearTimeout(screenDataTimeoutRef.current);
                 }
+                // Set a timeout to consider the device offline if no new frame arrives.
+                // Child app sends every 5-10s, so 15s is a safe buffer.
                 screenDataTimeoutRef.current = setTimeout(() => {
                     setIsDeviceResponding(false);
-                }, 10000); // 10 seconds timeout, as child sends every 5s
+                }, 15000); 
             }
         });
 
@@ -104,7 +131,7 @@ export default function RemotePage() {
         if (screenData?.url && isDeviceResponding) {
             return (
                 <Image
-                    key={screenData.timestamp}
+                    key={screenData.timestamp} // Re-render image on new timestamp
                     src={screenData.url}
                     alt="Live screen feed"
                     fill
@@ -125,9 +152,10 @@ export default function RemotePage() {
 
     const renderCameraFeed = () => (
         <div className="w-full h-full relative">
-            <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline hidden={hasCameraPermission !== true} />
+            <video ref={videoRef} className="w-full h-full rounded-md object-cover bg-black" autoPlay muted playsInline />
             {hasCameraPermission === null && (
                 <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center">
+                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
                     <p>Requesting camera permission...</p>
                 </div>
             )}
@@ -188,7 +216,7 @@ export default function RemotePage() {
                                 disabled={isSendingCommand}
                             >
                                 {isSendingCommand ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isScreenMirroring ? <X className="mr-2 h-4 w-4" /> : <ScreenShare className="mr-2 h-4 w-4" />)}
-                                {isScreenMirroring ? "Stop Live Screen Sharing" : "Start Live Screen Sharing"}
+                                {isScreenMirroring ? "Stop Live Screen" : "Start Live Screen"}
                             </Button>
                             <Button className="w-full justify-start" onClick={() => handleCommand('startScreenRecording')} disabled={isSendingCommand}>
                                 {isSendingCommand ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Video className="mr-2 h-4 w-4" />}
