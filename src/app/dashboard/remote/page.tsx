@@ -12,7 +12,7 @@ import { sendCommandToDevice } from '@/lib/firebase';
 import { listenToScreenData, type ScreenData } from '@/lib/child-data';
 import Image from 'next/image';
 
-const ACTIVE_DEVICE_ID = "device-1"; // This should be dynamic based on selected device
+const ACTIVE_DEVICE_ID = "child123"; // This should be dynamic based on selected device
 
 export default function RemotePage() {
     const { toast } = useToast();
@@ -57,7 +57,7 @@ export default function RemotePage() {
                 }
                 screenDataTimeoutRef.current = setTimeout(() => {
                     setIsDeviceResponding(false);
-                }, 5000); // 5 seconds timeout
+                }, 10000); // 10 seconds timeout, as child sends every 5s
             }
         });
 
@@ -81,6 +81,10 @@ export default function RemotePage() {
             if (commandType === 'startScreenMirroring') {
                 setIsScreenMirroring(true);
                 setIsDeviceResponding(true); // Assume it will respond initially
+                 toast({
+                    title: 'Live Screen Started',
+                    description: 'Waiting for device to send first frame...',
+                });
             } else if (commandType === 'stopScreenMirroring') {
                 setIsScreenMirroring(false);
             }

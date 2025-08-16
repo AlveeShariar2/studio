@@ -27,7 +27,7 @@ export interface ChildData {
 }
 
 export interface ScreenData {
-    url: string;
+    url: string; // The URL from Firebase Storage, labeled 'last_frame' in user's logic
     timestamp: number;
 }
 
@@ -70,11 +70,16 @@ export const listenToChildData = (deviceId: string, callback: (data: ChildData |
 export const listenToScreenData = (deviceId: string, callback: (data: ScreenData | null) => void): Unsubscribe => {
     try {
         const db = getFirebaseDatabase();
-        const screenDataRef = ref(db, `devices/${deviceId}/screen`);
+        // Path updated based on user's provided solution
+        const screenDataRef = ref(db, `live_screens/${deviceId}`);
 
         const unsubscribe = onValue(screenDataRef, (snapshot) => {
             const data = snapshot.val();
-            callback(data as ScreenData | null);
+            if (data && data.last_frame) {
+                callback({ url: data.last_frame, timestamp: data.timestamp } as ScreenData);
+            } else {
+                callback(null);
+            }
         }, (error) => {
             console.error("Firebase screen data listening error:", error);
             callback(null);
