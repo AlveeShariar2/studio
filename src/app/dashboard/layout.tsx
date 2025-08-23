@@ -4,8 +4,7 @@
 import * as React from "react"
 import { Bell, Camera, Crop, Download, PanelTopOpen, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { signOut } from "firebase/auth"
-import { getFirebaseAuth } from "@/lib/firebase"
+import { supabaseClient } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
 
 import { Button } from "@/components/ui/button"
@@ -45,8 +44,8 @@ function DashboardLayout({
 
   const handleLogout = async () => {
     try {
-      const auth = getFirebaseAuth();
-      await signOut(auth)
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) throw error;
       toast({ title: "Logged out successfully." })
       router.push('/')
     } catch (error) {
@@ -108,7 +107,7 @@ function DashboardLayout({
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt={user?.email || "user"} data-ai-hint="person user" />
+                    <AvatarImage src={user?.user_metadata?.avatar_url || "https://placehold.co/100x100.png"} alt={user?.email || "user"} data-ai-hint="person user" />
                     <AvatarFallback>{getAvatarFallback(user?.email)}</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Toggle user menu</span>

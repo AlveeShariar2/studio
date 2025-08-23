@@ -1,6 +1,6 @@
 
-import { getFirebaseDatabase } from './firebase';
-import { ref, onValue, type Unsubscribe } from 'firebase/database';
+import { supabaseClient, isSupabaseConfigured } from './supabase';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 // A simple type definition for the expected child data structure.
 // This should be expanded as more data types are sent from the child app.
@@ -27,37 +27,52 @@ export interface ChildData {
 }
 
 export interface ScreenData {
-    url: string; // The URL from Firebase Storage, labeled 'last_frame' in user's logic
+    url: string; // The URL from Supabase Storage, labeled 'last_frame' in user's logic
     timestamp: number;
 }
 
 
 /**
- * Listens for real-time data updates from a specific child device path in Firebase.
+ * Listens for real-time data updates from a specific child device path in Supabase.
  * @param deviceId The ID of the child device to listen to.
  * @param callback The function to execute with the new data.
- * @returns An unsubscribe function to stop listening.
+ * @returns A Supabase realtime channel to unsubscribe from.
  */
-export const listenToChildData = (deviceId: string, callback: (data: ChildData | null) => void): Unsubscribe => {
+export const listenToChildData = (deviceId: string, callback: (data: ChildData | null) => void): RealtimeChannel | null => {
+  if (!isSupabaseConfigured) {
+    console.error("Supabase not configured, cannot listen to child data.");
+    return null;
+  }
   try {
-    const db = getFirebaseDatabase();
-    // Using a more structured path: `devices/{deviceId}/telemetry`
-    const childDataRef = ref(db, `devices/${deviceId}/telemetry`);
+    const channel = supabaseClient
+      .channel(`device-telemetry-${deviceId}`)
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'telemetry',
+          filter: `device_id=eq.${deviceId}`
+        },
+        (payload) => {
+          // Assuming the new data is in payload.new and it's the full telemetry object
+          callback(payload.new as ChildData | null);
+        }
+      )
+      .subscribe((status, err) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`Subscribed to telemetry for device ${deviceId}`);
+        }
+        if (err) {
+            console.error(`Error subscribing to telemetry for device ${deviceId}`, err);
+        }
+      });
     
-    const unsubscribe = onValue(childDataRef, (snapshot) => {
-      const data = snapshot.val();
-      callback(data as ChildData | null);
-    }, (error) => {
-      console.error("Firebase data listening error:", error);
-      callback(null); // Pass null on error
-    });
-
-    return unsubscribe;
+    return channel;
 
   } catch (error) {
-    console.error("Failed to initialize Firebase listener:", error);
-    // Return a no-op function if Firebase isn't configured or fails
-    return () => {};
+    console.error("Failed to initialize Supabase listener:", error);
+    return null;
   }
 };
 
@@ -65,30 +80,46 @@ export const listenToChildData = (deviceId: string, callback: (data: ChildData |
  * Listens for real-time screen data updates for screen mirroring.
  * @param deviceId The ID of the child device to listen to.
  * @param callback The function to execute with the new screen data.
- * @returns An unsubscribe function to stop listening.
+ * @returns A Supabase realtime channel to unsubscribe from.
  */
-export const listenToScreenData = (deviceId: string, callback: (data: ScreenData | null) => void): Unsubscribe => {
+export const listenToScreenData = (deviceId: string, callback: (data: ScreenData | null) => void): RealtimeChannel | null => {
+    if (!isSupabaseConfigured) {
+        console.error("Supabase not configured, cannot listen to screen data.");
+        return null;
+    }
     try {
-        const db = getFirebaseDatabase();
-        // Path updated based on user's provided solution
-        const screenDataRef = ref(db, `live_screens/${deviceId}`);
-
-        const unsubscribe = onValue(screenDataRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.last_frame) {
-                callback({ url: data.last_frame, timestamp: data.timestamp } as ScreenData);
-            } else {
-                callback(null);
+        const channel = supabaseClient
+          .channel(`live-screen-${deviceId}`)
+          .on(
+            'postgres_changes',
+            { 
+              event: 'UPDATE', 
+              schema: 'public', 
+              table: 'live_screens',
+              filter: `device_id=eq.${deviceId}`
+            },
+            (payload) => {
+              const newData = payload.new as { last_frame: string; timestamp: string };
+              if (newData && newData.last_frame) {
+                  callback({ url: newData.last_frame, timestamp: new Date(newData.timestamp).getTime() });
+              } else {
+                  callback(null);
+              }
             }
-        }, (error) => {
-            console.error("Firebase screen data listening error:", error);
-            callback(null);
-        });
+          )
+          .subscribe((status, err) => {
+            if (status === 'SUBSCRIBED') {
+              console.log(`Subscribed to live screen for device ${deviceId}`);
+            }
+            if (err) {
+                console.error(`Error subscribing to live screen for device ${deviceId}`, err);
+            }
+          });
 
-        return unsubscribe;
+        return channel;
 
     } catch (error) {
-        console.error("Failed to initialize Firebase screen listener:", error);
-        return () => {};
+        console.error("Failed to initialize Supabase screen listener:", error);
+        return null;
     }
 }

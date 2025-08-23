@@ -3,8 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirebaseAuth, isFirebaseConfigured } from '@/lib/firebase';
+import { supabaseClient, isSupabaseConfigured } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
@@ -33,19 +32,25 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFirebaseConfigured) {
+    if (!isSupabaseConfigured) {
         toast({
             title: 'Configuration Error',
-            description: "Firebase is not configured. Please check your .env file.",
+            description: "Supabase is not configured. Please check your .env file.",
             variant: 'destructive',
         });
         return;
     }
     setLoading(true);
     try {
-      const auth = getFirebaseAuth();
-      await signInWithEmailAndPassword(auth, email, password);
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+      
       toast({ title: 'Login Successful', description: "Redirecting to dashboard..." });
+      // The onAuthStateChange listener in useAuth will handle the redirect
     } catch (error: any) {
       toast({
         title: 'Login Failed',
@@ -72,7 +77,7 @@ export default function LoginPage() {
     )
   }
 
-  const isFormDisabled = loading || !isFirebaseConfigured;
+  const isFormDisabled = loading || !isSupabaseConfigured;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -87,12 +92,12 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!isFirebaseConfigured && (
+          {!isSupabaseConfigured && (
             <Alert variant="destructive" className="mb-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Configuration Error</AlertTitle>
               <AlertDescription>
-                Firebase is not configured. Please add your credentials to the .env file.
+                Supabase is not configured. Please add your credentials to the .env file.
               </AlertDescription>
             </Alert>
           )}

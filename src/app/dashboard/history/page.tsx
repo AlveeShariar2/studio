@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from '@/components/ui/skeleton';
 import { listenToChildData, type ChildData } from '@/lib/child-data';
+import { type RealtimeChannel } from '@supabase/supabase-js';
 
 const ACTIVE_DEVICE_ID = "device-1"; // This should be dynamic based on the selected device
 
@@ -22,9 +23,11 @@ export default function HistoryPage() {
   const [webHistory, setWebHistory] = React.useState<HistoryItem[] | null>(null);
 
   React.useEffect(() => {
-    // Start listening to the active device's data
-    const unsubscribe = listenToChildData(ACTIVE_DEVICE_ID, (data: ChildData | null) => {
+    // We need to listen to the whole telemetry object and extract webHistory.
+    const channel: RealtimeChannel | null = listenToChildData(ACTIVE_DEVICE_ID, (data: ChildData | null) => {
       if (data && data.webHistory) {
+        // With Supabase, we might get the whole history log. Let's handle both cases.
+        // Assuming the child app sends the full history on each update for simplicity.
         setWebHistory(data.webHistory);
       } else {
         // Set to empty array if data is null or webHistory is missing
@@ -33,7 +36,11 @@ export default function HistoryPage() {
     });
 
     // Clean up the listener when the component unmounts
-    return () => unsubscribe();
+    return () => {
+        if (channel) {
+            channel.unsubscribe();
+        }
+    };
   }, []);
 
   const renderSkeleton = () => (

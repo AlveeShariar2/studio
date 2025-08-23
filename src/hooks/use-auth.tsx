@@ -2,8 +2,8 @@
 "use client"
 
 import { useState, useEffect, useContext, createContext, ReactNode } from 'react';
-import { onAuthStateChanged, type User } from 'firebase/auth';
-import { getFirebaseAuth } from '@/lib/firebase';
+import { type User } from '@supabase/supabase-js';
+import { supabaseClient, isSupabaseConfigured } from '@/lib/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -17,19 +17,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const auth = getFirebaseAuth();
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (!isSupabaseConfigured) {
+        console.error("Supabase is not configured.");
+        setLoading(false);
+        return;
+    }
+
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+    
+    // Check initial session
+    const checkUser = async () => {
+        const { data: { user } } = await supabaseClient.auth.getUser();
         setUser(user);
         setLoading(false);
-      });
-      return () => unsubscribe();
-    } catch (error) {
-        // This can happen if Firebase is not configured.
-        // The UI will show the configuration error message.
-        console.error("Auth Error:", error);
-        setLoading(false);
     }
+    checkUser();
+
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (

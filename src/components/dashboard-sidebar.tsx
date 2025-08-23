@@ -24,7 +24,7 @@ import {
   Clapperboard,
   PlusCircle,
 } from "lucide-react"
-import { type User } from "firebase/auth"
+import { type User } from "@supabase/supabase-js"
 
 import {
   Collapsible,
@@ -258,11 +258,11 @@ export function DashboardSidebar({ search, onAddDeviceClick, user }: DashboardSi
         <Separator className="my-2" />
         <div className="flex items-center gap-3 p-2 rounded-md hover:bg-sidebar-accent">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} data-ai-hint="person user"/>
+            <AvatarImage src={user?.user_metadata.avatar_url || "https://placehold.co/100x100.png"} data-ai-hint="person user"/>
             <AvatarFallback>{getAvatarFallback(user?.email)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col overflow-hidden">
-            <span className="font-semibold truncate">{user?.displayName || "Admin"}</span>
+            <span className="font-semibold truncate">{user?.user_metadata.full_name || "Admin"}</span>
             <span className="text-sm text-muted-foreground truncate">
               {user?.email || "admin@surokkha.net"}
             </span>

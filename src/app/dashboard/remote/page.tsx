@@ -1,3 +1,4 @@
+
 "use client"
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -8,9 +9,10 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ContentAnalysis } from '@/components/content-analysis';
-import { sendCommandToDevice } from '@/lib/firebase';
+import { sendCommandToDevice } from '@/lib/supabase';
 import { listenToScreenData, type ScreenData } from '@/lib/child-data';
 import Image from 'next/image';
+import { type RealtimeChannel } from '@supabase/supabase-js';
 
 const ACTIVE_DEVICE_ID = "child123"; // This should be dynamic based on selected device
 
@@ -72,7 +74,7 @@ export default function RemotePage() {
             return;
         }
 
-        const unsubscribe = listenToScreenData(ACTIVE_DEVICE_ID, (data) => {
+        const channel: RealtimeChannel | null = listenToScreenData(ACTIVE_DEVICE_ID, (data) => {
             if (data?.url) {
                 setScreenData(data);
                 setIsDeviceResponding(true);
@@ -89,7 +91,9 @@ export default function RemotePage() {
         });
 
         return () => {
-            unsubscribe();
+            if (channel) {
+                channel.unsubscribe();
+            }
             if (screenDataTimeoutRef.current) {
                 clearTimeout(screenDataTimeoutRef.current);
             }
